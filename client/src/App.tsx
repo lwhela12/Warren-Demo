@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
+import Wizard from "./components/Wizard";
 
 export default function App() {
   return (
-    <div>
-      <h1>Warren Demo</h1>
-      <p>Welcome to Warren Demo!</p>
+    <div className="page-container">
+      <Wizard />
     </div>
   );
 }

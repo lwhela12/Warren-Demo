@@ -16,8 +16,10 @@ npm install
 ### Scripts
 - `npm run dev`  
   Start server (Express on port 5001) and client (Vite on port 3000).
-- `npm run mailhog`  
-  Launch MailHog (SMTP: 1025, HTTP UI: 8025).
+ - `npm run mailhog`  
+   Launch MailHog (SMTP: 1025, HTTP UI: 8025).
+- `npm run demo:seed`  
+  Seed canned survey objectives into the database (`data/warren.db`).
 - `npm run db:seed`  
   Create/update SQLite schema and seed sample data (`data/warren.db`).
 - `npm run lint`  
