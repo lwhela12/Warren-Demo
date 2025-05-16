@@ -1,0 +1,19 @@
+# .gitignore - ignore build, environment, and dependency files
+# OS artifacts
+.DS_Store
+# Node modules
+node_modules/
+**/node_modules/
+# Runtime data
+data/
+!data/.gitkeep
+*.db
+*.sqlite
+# Environment
+.env
+# Service account keys
+*.json
+# Certificates
+certs/
+# Logs
+*.log
