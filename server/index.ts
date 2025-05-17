@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import claudeRoutes from './routes/claude';
+import surveyRoutes from './routes/survey';
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/claude', claudeRoutes);
+app.use('/api/survey', surveyRoutes);
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.send('OK');
