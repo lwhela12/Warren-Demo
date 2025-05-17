@@ -1,7 +1,7 @@
 import React from "react";
 import { colors } from "../theme";
 import "../animations.css";
-import { Question } from "./Wizard";
+import { Question, RubricItem } from "./Wizard"; // Import RubricItem
 import { API_URL } from "../config";
 
 interface Props {
@@ -26,8 +26,9 @@ const rubricColors: Record<string, { bg: string; color: string }> = {
   default: { bg: "#D7E8FB", color: "#275488" },
 };
 
-function RubricBadge({ tag }: { tag: string }) {
-  const color = rubricColors[tag] || rubricColors.default;
+function RubricBadge({ item }: { item: RubricItem }) {
+  const displayTag = item.Category;
+  const color = rubricColors[displayTag] || rubricColors.default;
   return (
     <span
       style={{
@@ -41,7 +42,7 @@ function RubricBadge({ tag }: { tag: string }) {
         marginRight: 6,
       }}
     >
-      {tag}
+      {displayTag}
     </span>
   );
 }
@@ -156,10 +157,13 @@ export default function WizardStepQuestions({
                       }}
                     />
                   </div>
-                  <div style={{ marginBottom: 8 }}>
-                    {(Array.isArray(q.rubric) ? q.rubric : []).map((tag, rIdx) => (
-                      <RubricBadge tag={tag} key={rIdx} />
-                    ))}
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <span>Rubric:</span>
+                    <div>
+                      {(Array.isArray(q.rubric) ? q.rubric : []).map((rubricItem, rIdx) => (
+                        <RubricBadge item={rubricItem} key={rIdx} />
+                      ))}
+                    </div>
                   </div>
                   {!locked && (
                     <div style={{ marginTop: 6 }}>

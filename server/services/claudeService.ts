@@ -13,9 +13,16 @@ const frameworkPath = path.join(
 
 // Load the Survey Methodology Framework so it can be embedded in prompts.
 const methodologyFramework = readFileSync(frameworkPath, 'utf8');
+
+export interface RubricItem {
+  Category: string;
+  Assessment?: string;
+  Rationale?: string;
+}
+
 export interface GeneratedQuestion {
   text: string;
-  rubric: string[];
+  rubric: RubricItem[];
 }
 
 /**
@@ -43,7 +50,7 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
     const rubricTags = ['Proficient', 'Emerging', 'Developing'];
     const questions = templates.map((text, idx) => ({
       text,
-      rubric: [rubricTags[idx % rubricTags.length]]
+      rubric: [{ Category: rubricTags[idx % rubricTags.length] }]
     }));
     return questions;
   }
@@ -90,7 +97,7 @@ export async function regenerateQuestion(
 ): Promise<GeneratedQuestion> {
   const methodologyPrompt = `You are an expert survey designer. Use the following Survey Methodology Framework to craft one developmentally appropriate question with rubric tags.\n\n${methodologyFramework}`;
 
-  const prompt = `${methodologyPrompt}\n\nObjective: ${objective}\nCurrent question: ${question}\nTeacher feedback: ${feedback}\nReturn only a JSON in the format {\"text\":\"...\",\"rubric\":[...]}.`;
+  const prompt = `${methodologyPrompt}\n\nObjective: ${objective}\nCurrent question: ${question}\nTeacher feedback: ${feedback}\nReturn only a JSON that includes the question and rubric tags in the JSON format [{\"text\":...,\"rubric\":[...]}, ...] provide no other text or explanation.`;
 
   const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
   const apiKey = process.env.CLAUDE_API_KEY;
@@ -98,7 +105,7 @@ export async function regenerateQuestion(
   if (!apiKey) {
     return {
       text: `${question} – revised per feedback`,
-      rubric: ['Proficient']
+      rubric: [{ Category: 'Proficient' }]
     };
   }
 

@@ -10,9 +10,17 @@ enum Step {
   Questions = 1,
 }
 
+// Define the structure for individual rubric items if they are objects
+export interface RubricItem {
+  Category: string; // Assuming 'Category' holds the displayable tag string
+  Assessment?: string; // Optional, if present in your data
+  Rationale?: string;  // Optional, if present in your data
+  // Add any other properties Claude might return for a rubric item
+}
+
 export interface GeneratedQuestion {
   text: string;
-  rubric: string[];
+  rubric: RubricItem[]; // Changed from string[] to RubricItem[]
 }
 
 export interface Question extends GeneratedQuestion {
@@ -59,10 +67,12 @@ const handleRegenerate = async (
       const err = await res.json();
       throw new Error(err.error || 'Failed to regenerate');
     }
-    const data = await res.json();
+    const { question: newQuestion } = await res.json(); // unwrap the returned question
     setQuestions((prev) =>
       prev.map((q) =>
-        q.id === qid ? { ...q, text: data.question.text, rubric: data.question.rubric } : q
+        q.id === qid
+          ? { ...q, text: newQuestion.text, rubric: newQuestion.rubric }
+          : q
       )
     );
   } catch (err: any) {
