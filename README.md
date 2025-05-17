@@ -8,7 +8,7 @@ Prerequisites:
 - Node.js >= 18
 - npm (works with pnpm or yarn)
 
-Install dependencies:
+Install dependencies from the workspace root:
 ```
 npm install
 ```

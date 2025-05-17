@@ -1,0 +1,19 @@
+{
+  "name": "warren-demo",
+  "private": true,
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "dev": "concurrently -k \"npm --workspace=server run dev\" \"npm --workspace=client run dev\"",
+    "mailhog": "bash ./scripts/mailhog.sh",
+    "tunnel": "bash ./scripts/tunnel.sh",
+    "demo:seed": "npm --workspace=server run demo:seed",
+    "db:seed": "npm --workspace=server run db:seed",
+    "lint": "eslint \"**/*.{ts,tsx}\"",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "eslint": "^8.52.0",
+    "vitest": "^0.34.6"
+  }
+}

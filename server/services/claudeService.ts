@@ -1,5 +1,5 @@
-// Stub service for generating questions from an objective
-// In production, replace with real AI API calls (e.g. OpenAI, Anthropic Claude)
+// Service for generating questions from an objective.
+// In production this would call an external AI service such as Claude.
 export interface GeneratedQuestion {
   text: string;
   rubric: string[];
@@ -10,14 +10,37 @@ export interface GeneratedQuestion {
  * Currently returns a static stub of 5 questions.
  */
 export async function generateQuestions(objective: string): Promise<GeneratedQuestion[]> {
-  // Static stub questions; include objective in prompt example
-  const baseQuestions = [
-    `In your own words, what does "${objective}" mean to you?`,
-    `Why is ${objective} important in this context?`,
-    `Describe a successful outcome related to ${objective}.`,
-    `What challenges do you anticipate regarding ${objective}?`,
-    `How would you measure the success of ${objective}?`
-  ];
-  // Assign a default rubric tag to each (e.g., 'Proficient')
-  return baseQuestions.map((q) => ({ text: q, rubric: ['Proficient'] }));
+  const methodologyPrompt =
+    'Apply the Survey Methodology Framework and return 5 developmentally appropriate questions with rubric tags.';
+
+  // Build the prompt that would normally be sent to the AI service
+  const prompt = `${methodologyPrompt}\nObjective: ${objective}`;
+
+  // Simulate async AI call with timeout
+  const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+
+  const aiCall = new Promise<GeneratedQuestion[]>((resolve) => {
+    // Static example generation
+    const templates = [
+      `In your own words, what does "${objective}" mean to you?`,
+      `Why is ${objective} important in this context?`,
+      `Describe a successful outcome related to ${objective}.`,
+      `What challenges do you anticipate regarding ${objective}?`,
+      `How would you measure the success of ${objective}?`
+    ];
+
+    const rubricTags = ['Proficient', 'Emerging', 'Developing'];
+    const questions = templates.map((text, idx) => ({
+      text,
+      rubric: [rubricTags[idx % rubricTags.length]]
+    }));
+    // Short delay to mimic network
+    setTimeout(() => resolve(questions), 500);
+  });
+
+  const timeout = new Promise<GeneratedQuestion[]>((_, reject) => {
+    setTimeout(() => reject(new Error('Claude API timeout')), timeoutMs);
+  });
+
+  return Promise.race([aiCall, timeout]);
 }
