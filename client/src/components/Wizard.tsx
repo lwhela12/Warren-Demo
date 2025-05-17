@@ -11,12 +11,14 @@ enum Step {
 }
 
 // Define the structure for individual rubric items if they are objects
-export interface RubricItem {
-  Category: string; // Assuming 'Category' holds the displayable tag string
-  Assessment?: string; // Optional, if present in your data
-  Rationale?: string;  // Optional, if present in your data
-  // Add any other properties Claude might return for a rubric item
+export interface RubricObject {
+  Category: string; // Display tag string from Claude
+  Assessment?: string;
+  Rationale?: string;
 }
+
+// Rubric items can come back as simple strings or the full object above
+export type RubricItem = RubricObject | string;
 
 export interface GeneratedQuestion {
   text: string;
