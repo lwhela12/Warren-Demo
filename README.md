@@ -19,6 +19,12 @@ Copy `.env.example` to `server/.env` before running the development server:
 cp .env.example server/.env
 ```
 
+Create a `client/.env` file and set the API URL used by the React app:
+
+```
+echo "VITE_API_URL=http://localhost:5001" > client/.env
+```
+
 ### Scripts
 - `npm run dev`  
   Start server (Express on port 5001) and client (Vite on port 3000).
@@ -37,6 +43,7 @@ cp .env.example server/.env
 - `PORT`  - server port (default: 5001)
 - `DATABASE_URL`  - Prisma SQLite URL (default: file:../data/warren.db)
 - `CLIENT_URL`  - client base URL for magic-link (default: http://localhost:3000)
+- `VITE_API_URL` - API base URL for the React app (default: http://localhost:5001)
 
 ### Project Structure
 ```
