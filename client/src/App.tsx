@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Wizard from "./components/Wizard";
+import Login from "./Login";
 
 function useAuthToken() {
   const [token, setToken] = useState<string | null>(
@@ -37,13 +38,7 @@ export default function App() {
   const token = useAuthToken();
   return (
     <div className="page-container">
-      {token ? (
-        <Wizard />
-      ) : (
-        <div style={{ textAlign: "center", marginTop: 40 }}>
-          Please check your email for the login link.
-        </div>
-      )}
+      {token ? <Wizard /> : <Login />}
     </div>
   );
 }
