@@ -157,7 +157,7 @@ export default function WizardStepQuestions({
                     />
                   </div>
                   <div style={{ marginBottom: 8 }}>
-                    {q.rubric.map((tag, rIdx) => (
+                    {(Array.isArray(q.rubric) ? q.rubric : []).map((tag, rIdx) => (
                       <RubricBadge tag={tag} key={rIdx} />
                     ))}
                   </div>
