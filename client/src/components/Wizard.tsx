@@ -42,17 +42,18 @@ export default function Wizard() {
     );
   };
 
-  const handleRegenerate = async (
-    qid: string,
-    feedback: string
-  ) => {
-    setRegenerating(qid);
-    try {
-      const res = await fetch(`${API_URL}/api/claude/regenerate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ objective, feedback })
-      });
+const handleRegenerate = async (
+  qid: string,
+  feedback: string
+) => {
+  setRegenerating(qid);
+  try {
+    const current = questions.find(q => q.id === qid)?.text || '';
+    const res = await fetch(`${API_URL}/api/claude/regenerate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ objective, question: current, feedback })
+    });
       if (!res.ok) {
         throw new Error('Failed to regenerate');
       }
