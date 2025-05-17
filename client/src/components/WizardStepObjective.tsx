@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { colors } from "../theme";
+import "../animations.css";
 
 interface Props {
   initialObjective?: string;
@@ -20,7 +22,7 @@ export default function WizardStepObjective({ initialObjective = "", loading, er
   };
   return (
     <form onSubmit={handleFormSubmit} style={{ maxWidth: 500, margin: "0 auto" }}>
-      <label htmlFor="objective" style={{ fontWeight: 600, fontSize: 18, marginBottom: 5, display: "block", color: "#1b2945" }}>
+      <label htmlFor="objective" style={{ fontWeight: 600, fontSize: 18, marginBottom: 5, display: "block", color: colors.primaryDarkBlue }}>
         Survey Objective
       </label>
       <textarea
@@ -54,7 +56,7 @@ export default function WizardStepObjective({ initialObjective = "", loading, er
         disabled={loading}
         style={{
           minWidth: 160,
-          background: "#276EF1",
+          background: colors.primaryDarkBlue,
           color: "white",
           border: "none",
           fontWeight: 600,
@@ -109,15 +111,6 @@ export default function WizardStepObjective({ initialObjective = "", loading, er
           "Generate Questions"
         )}
       </button>
-      {/* Loading spinner keyframes */}
-      <style>
-        {`
-          @keyframes lds-bounce {
-            0%, 80%, 100% { transform: scale(0.85);}
-            40% { transform: scale(1);}
-          }
-        `}
-      </style>
     </form>
   );
 }

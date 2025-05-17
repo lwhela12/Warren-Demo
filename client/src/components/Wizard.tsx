@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import WizardStepObjective from "./WizardStepObjective";
 import WizardStepQuestions from "./WizardStepQuestions";
 import { API_URL } from "../config";
+import { colors } from "../theme";
 
 // Step enums for readability.
 enum Step {
@@ -26,6 +27,7 @@ export default function Wizard() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState<string | null>(null);
 
   const goToStep = (target: Step) => setStep(target);
   const handleBack = () => setStep((prev) => (prev === Step.Questions ? Step.Objective : prev));
@@ -44,6 +46,7 @@ export default function Wizard() {
     qid: string,
     feedback: string
   ) => {
+    setRegenerating(qid);
     try {
       const res = await fetch(`${API_URL}/api/claude/regenerate`, {
         method: 'POST',
@@ -61,6 +64,8 @@ export default function Wizard() {
       );
     } catch (err) {
       console.error(err);
+    } finally {
+      setRegenerating(null);
     }
   };
 
@@ -111,7 +116,7 @@ export default function Wizard() {
   // Pretty horizontal step indicator styled close to reference.
   function Stepper() {
     // Color definitions (brand blue and stepper grays)
-    const brandBlue = "#276EF1"; // example Warren-blue
+    const brandBlue = colors.primaryDarkBlue;
     const gray = "#D2D6DB";
     return (
       <div
@@ -141,7 +146,7 @@ export default function Wizard() {
               alignItems: "center",
               justifyContent: "center",
               fontSize: 20,
-              boxShadow: step === Step.Objective ? "0 2px 8px #276EF122" : undefined,
+              boxShadow: step === Step.Objective ? "0 2px 8px #2A3F5422" : undefined,
               marginRight: 10,
               transition: "background 0.2s",
             }}
@@ -150,7 +155,7 @@ export default function Wizard() {
           </div>
           <span
             style={{
-              color: step === Step.Objective ? brandBlue : "#333",
+              color: step === Step.Objective ? brandBlue : colors.primaryText,
               fontWeight: step === Step.Objective ? 600 : 400,
               fontSize: 16,
               letterSpacing: "0.01em",
@@ -188,7 +193,7 @@ export default function Wizard() {
               alignItems: "center",
               justifyContent: "center",
               fontSize: 20,
-              boxShadow: step === Step.Questions ? "0 2px 8px #276EF122" : undefined,
+              boxShadow: step === Step.Questions ? "0 2px 8px #2A3F5422" : undefined,
               marginRight: 10,
               marginLeft: 10,
               transition: "background 0.2s",
@@ -198,7 +203,7 @@ export default function Wizard() {
           </div>
           <span
             style={{
-              color: step === Step.Questions ? brandBlue : "#333",
+              color: step === Step.Questions ? brandBlue : colors.primaryText,
               fontWeight: step === Step.Questions ? 600 : 400,
               fontSize: 16,
               letterSpacing: "0.01em",
@@ -222,7 +227,7 @@ export default function Wizard() {
         boxShadow: "0 6px 32px rgba(37,74,138,0.08)",
         padding: "2.2rem 2.5rem 2.2rem 2.5rem",
         borderRadius: 24,
-        background: "#f9fbff",
+        background: colors.offWhite,
         border: "1.5px solid #e7e7ef",
       }}
     >
@@ -231,7 +236,7 @@ export default function Wizard() {
         marginBottom: 18,
         fontSize: 32,
         fontWeight: 700,
-        color: "#276EF1",
+        color: colors.primaryDarkBlue,
         textAlign: "center",
         letterSpacing: "0.015em"
       }}>
@@ -251,6 +256,7 @@ export default function Wizard() {
           objective={objective}
           surveyId={surveyId as string}
           questions={questions}
+          regeneratingId={regenerating}
           onQuestionChange={handleQuestionChange}
           onStatusChange={handleStatusChange}
           onRegenerate={handleRegenerate}

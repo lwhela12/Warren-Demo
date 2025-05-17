@@ -1,4 +1,6 @@
 import React from "react";
+import { colors } from "../theme";
+import "../animations.css";
 import { Question } from "./Wizard";
 import { API_URL } from "../config";
 
@@ -6,11 +8,12 @@ interface Props {
   surveyId: string;
   objective: string;
   questions: Question[];
+  regeneratingId?: string | null;
   loading?: boolean;
   error?: string | null;
   onQuestionChange: (qid: string, text: string) => void;
   onStatusChange: (qid: string, status: 'approved' | 'excluded') => void;
-  onRegenerate: (qid: string, feedback: string) => void;
+  onRegenerate: (qid: string, feedback: string) => Promise<void> | void;
   onBack: () => void;
 }
 
@@ -49,6 +52,7 @@ export default function WizardStepQuestions({
   surveyId,
   objective,
   questions,
+  regeneratingId,
   loading,
   error,
   onQuestionChange,
@@ -61,8 +65,8 @@ export default function WizardStepQuestions({
   return (
     <div style={{ width: "100%", maxWidth: 510, margin: "0 auto" }}>
       <div style={{ marginBottom: 18 }}>
-        <span style={{ color: "#1B2945", fontSize: 15.5, fontWeight: 600 }}>Survey Objective:</span>{" "}
-        <span style={{ fontStyle: "italic", color: "#276EF1", fontSize: 16 }}>{objective}</span>
+        <span style={{ color: colors.primaryDarkBlue, fontSize: 15.5, fontWeight: 600 }}>Survey Objective:</span>{" "}
+        <span style={{ fontStyle: "italic", color: colors.primaryDarkBlue, fontSize: 16 }}>{objective}</span>
       </div>
       <h2 style={{ marginTop: 0, fontSize: 22, fontWeight: 700, color: "#121a2f", letterSpacing: 0.5 }}>
         Generated Questions
@@ -72,30 +76,22 @@ export default function WizardStepQuestions({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "24px 0" }}>
           <span className="lds-ellipsis" style={{ display: "inline-block" }}>
             <span style={{
-              display: "inline-block", width: 10, height: 10, margin: "0 1.2px", background: "#276EF1",
+              display: "inline-block", width: 10, height: 10, margin: "0 1.2px", background: colors.primaryDarkBlue,
               borderRadius: "50%", opacity: 0.45,
               animation: "lds-bounce 1.2s infinite ease-in-out", animationDelay: "0s"
             }} />
             <span style={{
-              display: "inline-block", width: 10, height: 10, margin: "0 1.2px", background: "#276EF1",
+              display: "inline-block", width: 10, height: 10, margin: "0 1.2px", background: colors.primaryDarkBlue,
               borderRadius: "50%", opacity: 0.7,
               animation: "lds-bounce 1.2s infinite ease-in-out", animationDelay: ".15s"
             }} />
             <span style={{
-              display: "inline-block", width: 10, height: 10, margin: "0 1.2px", background: "#276EF1",
+              display: "inline-block", width: 10, height: 10, margin: "0 1.2px", background: colors.primaryDarkBlue,
               borderRadius: "50%", opacity: 1,
               animation: "lds-bounce 1.2s infinite ease-in-out", animationDelay: ".3s"
             }} />
           </span>
-          <span style={{ marginLeft: 13, color: "#276EF1", fontWeight: 600 }}>Loading...</span>
-          <style>
-            {`
-              @keyframes lds-bounce {
-                0%, 80%, 100% { transform: scale(0.85);}
-                40% { transform: scale(1);}
-              }
-            `}
-          </style>
+          <span style={{ marginLeft: 13, color: colors.primaryDarkBlue, fontWeight: 600 }}>Loading...</span>
         </div>
       )}
       {/* error state */}
@@ -112,6 +108,7 @@ export default function WizardStepQuestions({
             {questions.map((q, idx) => {
               const feedback = feedbacks[q.id] || "";
               const locked = q.status === "approved" || q.status === "excluded";
+              const isRegen = regeneratingId === q.id;
               return (
                 <li
                   key={q.id}
@@ -138,7 +135,7 @@ export default function WizardStepQuestions({
                     </span>
                     <textarea
                       value={q.text}
-                      disabled={q.status === "approved"}
+                      disabled={q.status === "approved" || isRegen}
                       onChange={(e) => {
                         const txt = e.target.value;
                         onQuestionChange(q.id, txt);
@@ -151,7 +148,12 @@ export default function WizardStepQuestions({
                           }).catch(() => {});
                         }, 500);
                       }}
-                      style={{ width: "100%", resize: "vertical" }}
+                      style={{
+                        width: "100%",
+                        resize: "vertical",
+                        background: isRegen ? "#f6f6f6" : undefined,
+                        color: isRegen ? "#666" : undefined,
+                      }}
                     />
                   </div>
                   <div style={{ marginBottom: 8 }}>
@@ -167,23 +169,51 @@ export default function WizardStepQuestions({
                         onChange={(e) =>
                           setFeedbacks({ ...feedbacks, [q.id]: e.target.value })
                         }
-                        style={{ width: "100%", resize: "vertical", marginBottom: 6 }}
+                        disabled={isRegen}
+                        style={{
+                          width: "100%",
+                          resize: "vertical",
+                          marginBottom: 6,
+                          background: isRegen ? "#f6f6f6" : undefined,
+                          color: isRegen ? "#666" : undefined,
+                        }}
                       />
                       <div style={{ display: "flex", gap: 6 }}>
                         <button
                           type="button"
-                          onClick={() => {
-                            onRegenerate(q.id, feedback);
+                          disabled={isRegen}
+                          onClick={async () => {
+                            await onRegenerate(q.id, feedback);
                             setFeedbacks({ ...feedbacks, [q.id]: "" });
                           }}
-                          style={{ background: "#EFEFF5", border: "none", padding: "6px 12px", borderRadius: 6, cursor: "pointer" }}
+                          style={{
+                            background: "#EFEFF5",
+                            border: "none",
+                            padding: "6px 12px",
+                            borderRadius: 6,
+                            cursor: isRegen ? "default" : "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6
+                          }}
                         >
-                          Regenerate
+                          {isRegen ? (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                              <span className="lds-ellipsis" style={{ display: "inline-block", verticalAlign: "middle" }}>
+                                <span style={{ display: "inline-block", width: 8, height: 8, margin: "0 1px", background: "#555", borderRadius: "50%", opacity: 0.55, animation: "lds-bounce 1.2s infinite ease-in-out", animationDelay: "0s" }} />
+                                <span style={{ display: "inline-block", width: 8, height: 8, margin: "0 1px", background: "#555", borderRadius: "50%", opacity: 0.7, animation: "lds-bounce 1.2s infinite ease-in-out", animationDelay: ".15s" }} />
+                                <span style={{ display: "inline-block", width: 8, height: 8, margin: "0 1px", background: "#555", borderRadius: "50%", opacity: 1, animation: "lds-bounce 1.2s infinite ease-in-out", animationDelay: ".3s" }} />
+                              </span>
+                              Generating
+                            </span>
+                          ) : (
+                            "Regenerate"
+                          )}
                         </button>
                         <button
                           type="button"
                           onClick={() => onStatusChange(q.id, "approved")}
-                          style={{ background: "#276EF1", color: "#fff", border: "none", padding: "6px 12px", borderRadius: 6, cursor: "pointer" }}
+                          style={{ background: colors.primaryDarkBlue, color: "#fff", border: "none", padding: "6px 12px", borderRadius: 6, cursor: "pointer" }}
                         >
                           Approve
                         </button>
