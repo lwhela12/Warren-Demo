@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Wizard from "./components/Wizard";
+
+import { API_URL } from "./config";
+
 import Login from "./Login";
+
 
 function useAuthToken() {
   const [token, setToken] = useState<string | null>(
@@ -11,7 +15,7 @@ function useAuthToken() {
     const url = new URL(window.location.href);
     const t = url.searchParams.get("token");
     if (t) {
-      fetch("http://localhost:5001/api/auth/verify", {
+      fetch(`${API_URL}/api/auth/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: t })
