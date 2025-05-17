@@ -13,6 +13,24 @@ export default function Login() {
     }
     setStatus("loading");
     setError(null);
+
+    // --- START: Magic Link Bypass ---
+    // The original magic link flow is commented out below.
+    // This new code bypasses email verification for development.
+    // It sets a dummy token in localStorage and reloads the page.
+    // App.tsx will then pick up this token and grant access.
+
+    const dummyToken = `bypassed-token-for-${email}`;
+    localStorage.setItem("jwt", dummyToken);
+    setStatus("success"); // Update UI status
+
+    // Reload the page to allow App.tsx's useAuthToken to pick up the new token
+    window.location.reload();
+
+    // --- END: Magic Link Bypass ---
+
+    /*
+    // Original magic link sending logic:
     try {
       const res = await fetch("http://localhost:5001/api/auth/magic-link", {
         method: "POST",
@@ -28,6 +46,7 @@ export default function Login() {
       setError(err.message || "Unexpected error");
       setStatus("error");
     }
+    */
   };
 
   return (
