@@ -27,7 +27,7 @@ const rubricColors: Record<string, { bg: string; color: string }> = {
 };
 
 function RubricBadge({ item }: { item: RubricItem }) {
-  const displayTag = item.Category;
+  const displayTag = typeof item === 'string' ? item : item.Category;
   const color = rubricColors[displayTag] || rubricColors.default;
   return (
     <span
