@@ -69,11 +69,12 @@ const handleRegenerate = async (
       const err = await res.json();
       throw new Error(err.error || 'Failed to regenerate');
     }
-    const { question: newQuestion } = await res.json(); // unwrap the returned question
+    const { question: newQuestion } = await res.json();
+    const qData = Array.isArray(newQuestion) ? newQuestion[0] : newQuestion;
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === qid
-          ? { ...q, text: newQuestion.text, rubric: newQuestion.rubric }
+          ? { ...q, text: qData.text, rubric: qData.rubric }
           : q
       )
     );

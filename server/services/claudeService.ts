@@ -137,7 +137,8 @@ export async function regenerateQuestion(
     const text = data.content?.[0]?.text?.trim();
     if (!text) throw new Error('Claude API returned empty content');
 
-    return JSON.parse(text) as GeneratedQuestion;
+    const parsed = JSON.parse(text);
+    return (Array.isArray(parsed) ? parsed[0] : parsed) as GeneratedQuestion;
   } finally {
     clearTimeout(id);
   }
