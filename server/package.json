@@ -2,12 +2,11 @@
   "name": "warren-server",
   "version": "1.0.0",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
 
-    "dev": "nodemon --watch . --ext ts --exec ts-node-esm ./index.ts",
-    "db:seed": "ts-node-esm ./db/seed.ts",
-    "demo:seed": "ts-node-esm ./db/demoSeed.ts"
+    "dev": "nodemon --watch . --ext ts --exec \"ts-node index.ts\"",
+    "db:seed": "ts-node ./db/seed.ts",
+    "demo:seed": "ts-node ./db/demoSeed.ts"
 
   },
   "dependencies": {
@@ -21,6 +20,10 @@
   "devDependencies": {
     "ts-node": "^10.9.1",
     "nodemon": "^3.0.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "@types/express": "^4.17.17",
+    "@types/cors": "^2.8.12",
+    "@types/node": "^22.15.18",
+    "@types/nodemailer": "^6.4.17"
   }
 }

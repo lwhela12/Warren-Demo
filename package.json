@@ -3,11 +3,11 @@
   "private": true,
   "workspaces": ["server", "client"],
   "scripts": {
-    "dev": "concurrently -k \"npm --workspace=server run dev\" \"npm --workspace=client run dev\"",
+    "dev": "concurrently -k \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
     "mailhog": "bash ./scripts/mailhog.sh",
     "tunnel": "bash ./scripts/tunnel.sh",
-    "demo:seed": "npm --workspace=server run demo:seed",
-    "db:seed": "npm --workspace=server run db:seed",
+    "demo:seed": "npm --prefix server run demo:seed",
+    "db:seed": "npm --prefix server run db:seed",
     "lint": "eslint \"**/*.{ts,tsx}\"",
     "test": "vitest"
   },

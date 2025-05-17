@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
@@ -13,7 +13,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/claude', claudeRoutes);
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', (_req: Request, res: Response) => {
   res.send('OK');
 });
 
