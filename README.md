@@ -44,6 +44,9 @@ echo "VITE_API_URL=http://localhost:5001" > client/.env
 - `DATABASE_URL`  - Prisma SQLite URL (default: file:../data/warren.db)
 - `CLIENT_URL`  - client base URL for magic-link (default: http://localhost:3000)
 - `VITE_API_URL` - API base URL for the React app (default: http://localhost:5001)
+- `CLAUDE_API_KEY` - Anthropic Claude API key for question generation (optional)
+- `CLAUDE_MODEL` - Claude model name (default: claude-3-haiku-20240307)
+- `CLAUDE_TIMEOUT_MS` - timeout for Claude API calls (default: 10000)
 
 ### Project Structure
 ```

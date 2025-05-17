@@ -1,5 +1,18 @@
 // Service for generating questions from an objective.
-// In production this would call an external AI service such as Claude.
+// Calls Anthropic's Claude API when a key is provided, otherwise returns a stub.
+import { readFileSync } from 'fs';
+import path from 'path';
+
+const frameworkPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  'docs',
+  'AL _ PFEL_Survey Methodology Framework.docx.md'
+);
+
+// Load the Survey Methodology Framework so it can be embedded in prompts.
+const methodologyFramework = readFileSync(frameworkPath, 'utf8');
 export interface GeneratedQuestion {
   text: string;
   rubric: string[];
@@ -7,20 +20,19 @@ export interface GeneratedQuestion {
 
 /**
  * Generate a list of questions and rubric tags based on a survey objective.
- * Currently returns a static stub of 5 questions.
+ * If CLAUDE_API_KEY is set, questions are generated via the Claude API.
+ * Otherwise a static stub is returned for local usage.
  */
 export async function generateQuestions(objective: string): Promise<GeneratedQuestion[]> {
-  const methodologyPrompt =
-    'Apply the Survey Methodology Framework and return 5 developmentally appropriate questions with rubric tags.';
+  const methodologyPrompt = `You are an expert survey designer. Use the following Survey Methodology Framework to craft 5 developmentally appropriate questions with rubric tags.\n\n${methodologyFramework}`;
 
-  // Build the prompt that would normally be sent to the AI service
-  const prompt = `${methodologyPrompt}\nObjective: ${objective}`;
+  const prompt = `${methodologyPrompt}\n\nObjective: ${objective}\nReturn the result as JSON in the format [{\"text\":...,\"rubric\":[...]}, ...]`;
 
-  // Simulate async AI call with timeout
   const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+  const apiKey = process.env.CLAUDE_API_KEY;
 
-  const aiCall = new Promise<GeneratedQuestion[]>((resolve) => {
-    // Static example generation
+  // If no API key is provided, return a static stub for local development/test
+  if (!apiKey) {
     const templates = [
       `In your own words, what does "${objective}" mean to you?`,
       `Why is ${objective} important in this context?`,
@@ -28,19 +40,44 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
       `What challenges do you anticipate regarding ${objective}?`,
       `How would you measure the success of ${objective}?`
     ];
-
     const rubricTags = ['Proficient', 'Emerging', 'Developing'];
     const questions = templates.map((text, idx) => ({
       text,
       rubric: [rubricTags[idx % rubricTags.length]]
     }));
-    // Short delay to mimic network
-    setTimeout(() => resolve(questions), 500);
-  });
+    return questions;
+  }
 
-  const timeout = new Promise<GeneratedQuestion[]>((_, reject) => {
-    setTimeout(() => reject(new Error('Claude API timeout')), timeoutMs);
-  });
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
 
-  return Promise.race([aiCall, timeout]);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text?.trim();
+    if (!text) throw new Error('Claude API returned empty content');
+
+    return JSON.parse(text) as GeneratedQuestion[];
+  } finally {
+    clearTimeout(id);
+  }
 }
