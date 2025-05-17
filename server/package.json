@@ -4,9 +4,11 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
+
     "dev": "nodemon --watch . --ext ts --exec ts-node-esm ./index.ts",
     "db:seed": "ts-node-esm ./db/seed.ts",
     "demo:seed": "ts-node-esm ./db/demoSeed.ts"
+
   },
   "dependencies": {
     "express": "^4.18.2",
