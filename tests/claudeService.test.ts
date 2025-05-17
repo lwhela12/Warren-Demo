@@ -15,7 +15,11 @@ describe('generateQuestions', () => {
 
 describe('regenerateQuestion', () => {
   it('returns a single question', async () => {
-    const q = await regenerateQuestion('Engagement', 'make it shorter');
+    const q = await regenerateQuestion(
+      'Engagement',
+      'Why is engagement important?',
+      'make it shorter'
+    );
     expect(q.text.length).toBeGreaterThan(0);
     expect(Array.isArray(q.rubric)).toBe(true);
     expect(q.rubric.length).toBeGreaterThan(0);

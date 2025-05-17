@@ -69,3 +69,21 @@ GitHub Actions runs ESLint and Vitest on PRs to `main`.
 2. When the app loads, enter your email and submit the form.
 3. MailHog (http://localhost:8025) will receive an email containing a magic link.
 4. Clicking the link verifies the token and stores a JWT in `localStorage`, unlocking the survey wizard.
+
+## API
+
+### Regenerate a Question
+
+`POST /api/claude/regenerate`
+
+Request body:
+
+```json
+{ "objective": "string", "question": "string", "feedback": "string" }
+```
+
+The endpoint revises the provided `question` using the teacher's `feedback` and returns:
+
+```json
+{ "question": { "text": "...", "rubric": ["..."] } }
+```

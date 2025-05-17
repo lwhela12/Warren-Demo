@@ -85,10 +85,53 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
 // Regenerate a single question based on an objective and teacher feedback.
 export async function regenerateQuestion(
   objective: string,
+  question: string,
   feedback: string
 ): Promise<GeneratedQuestion> {
-  const [question] = await generateQuestions(
-    `${objective}. Teacher feedback: ${feedback}`
-  );
-  return question;
+  const methodologyPrompt = `You are an expert survey designer. Use the following Survey Methodology Framework to craft one developmentally appropriate question with rubric tags.\n\n${methodologyFramework}`;
+
+  const prompt = `${methodologyPrompt}\n\nObjective: ${objective}\nCurrent question: ${question}\nTeacher feedback: ${feedback}\nReturn only a JSON in the format {\"text\":\"...\",\"rubric\":[...]}.`;
+
+  const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+  const apiKey = process.env.CLAUDE_API_KEY;
+
+  if (!apiKey) {
+    return {
+      text: `${question} – revised per feedback`,
+      rubric: ['Proficient']
+    };
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text?.trim();
+    if (!text) throw new Error('Claude API returned empty content');
+
+    return JSON.parse(text) as GeneratedQuestion;
+  } finally {
+    clearTimeout(id);
+  }
 }
