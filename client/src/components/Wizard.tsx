@@ -16,6 +16,7 @@ export interface GeneratedQuestion {
 
 export interface Question extends GeneratedQuestion {
   id: string;
+  status?: 'pending' | 'approved' | 'excluded';
 }
 
 export default function Wizard() {
@@ -31,6 +32,36 @@ export default function Wizard() {
 
   const handleQuestionChange = (qid: string, text: string) => {
     setQuestions((prev) => prev.map((q) => (q.id === qid ? { ...q, text } : q)));
+  };
+
+  const handleStatusChange = (qid: string, status: 'approved' | 'excluded') => {
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === qid ? { ...q, status } : q))
+    );
+  };
+
+  const handleRegenerate = async (
+    qid: string,
+    feedback: string
+  ) => {
+    try {
+      const res = await fetch(`${API_URL}/api/claude/regenerate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objective, feedback })
+      });
+      if (!res.ok) {
+        throw new Error('Failed to regenerate');
+      }
+      const data = await res.json();
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === qid ? { ...q, text: data.question.text, rubric: data.question.rubric } : q
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleObjectiveSubmit = async (obj: string) => {
@@ -64,7 +95,8 @@ export default function Wizard() {
       const merged = survey.questions.map((q: any, idx: number) => ({
         id: q.id,
         text: q.text,
-        rubric: data.questions[idx].rubric
+        rubric: data.questions[idx].rubric,
+        status: 'pending' as const
       }));
       setSurveyId(survey.id);
       setQuestions(merged);
@@ -220,6 +252,8 @@ export default function Wizard() {
           surveyId={surveyId as string}
           questions={questions}
           onQuestionChange={handleQuestionChange}
+          onStatusChange={handleStatusChange}
+          onRegenerate={handleRegenerate}
           loading={loading}
           error={error}
           onBack={handleBack}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateQuestions } from '../server/services/claudeService';
+import { generateQuestions, regenerateQuestion } from '../server/services/claudeService';
 
 describe('generateQuestions', () => {
   it('returns at least 5 questions with rubric tags', async () => {
@@ -10,5 +10,14 @@ describe('generateQuestions', () => {
       expect(Array.isArray(q.rubric)).toBe(true);
       expect(q.rubric.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('regenerateQuestion', () => {
+  it('returns a single question', async () => {
+    const q = await regenerateQuestion('Engagement', 'make it shorter');
+    expect(q.text.length).toBeGreaterThan(0);
+    expect(Array.isArray(q.rubric)).toBe(true);
+    expect(q.rubric.length).toBeGreaterThan(0);
   });
 });

@@ -81,3 +81,14 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
     clearTimeout(id);
   }
 }
+
+// Regenerate a single question based on an objective and teacher feedback.
+export async function regenerateQuestion(
+  objective: string,
+  feedback: string
+): Promise<GeneratedQuestion> {
+  const [question] = await generateQuestions(
+    `${objective}. Teacher feedback: ${feedback}`
+  );
+  return question;
+}
