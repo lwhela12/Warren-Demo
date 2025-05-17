@@ -1,7 +1,10 @@
 {
   "name": "warren-demo",
   "private": true,
-  "workspaces": ["server", "client"],
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "scripts": {
     "dev": "concurrently -k \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
     "mailhog": "bash ./scripts/mailhog.sh",
@@ -14,6 +17,7 @@
   "devDependencies": {
     "concurrently": "^8.2.0",
     "eslint": "^8.52.0",
+    "prisma": "^6.8.2",
     "vitest": "^0.34.6"
   }
 }
