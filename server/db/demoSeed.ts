@@ -1,4 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
+import yaml from 'yaml';
 
 const prisma = new PrismaClient();
 
@@ -8,14 +11,10 @@ async function main() {
   await prisma.question.deleteMany();
   await prisma.survey.deleteMany();
 
-  // Canned objectives for demo scenarios
-  const objectives = [
-    'Improve student engagement in group projects',
-    'Enhance understanding of core physics concepts',
-    'Boost confidence in mathematical problem solving',
-    'Assess clarity of the recent lecture on Shakespearean literature',
-    'Gather feedback on effectiveness of peer review sessions'
-  ];
+  // Load canned objectives from YAML file
+  const yamlPath = path.join(__dirname, 'demoObjectives.yaml');
+  const file = fs.readFileSync(yamlPath, 'utf8');
+  const objectives: string[] = yaml.parse(file);
 
   for (const objective of objectives) {
     await prisma.survey.create({ data: { objective } });
