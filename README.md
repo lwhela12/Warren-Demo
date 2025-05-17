@@ -13,6 +13,12 @@ Install dependencies from the workspace root:
 npm install
 ```
 
+Copy `.env.example` to `server/.env` before running the development server:
+
+```
+cp .env.example server/.env
+```
+
 ### Scripts
 - `npm run dev`  
   Start server (Express on port 5001) and client (Vite on port 3000).
