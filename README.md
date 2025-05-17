@@ -60,3 +60,9 @@ echo "VITE_API_URL=http://localhost:5001" > client/.env
 
 ## Continuous Integration
 GitHub Actions runs ESLint and Vitest on PRs to `main`.
+
+## Login Flow
+1. Start the dev server with `npm run dev` and `npm run mailhog` in another terminal.
+2. When the app loads, enter your email and submit the form.
+3. MailHog (http://localhost:8025) will receive an email containing a magic link.
+4. Clicking the link verifies the token and stores a JWT in `localStorage`, unlocking the survey wizard.

@@ -18,7 +18,7 @@ SQLite via Prisma. Models: Survey, Question, Response; seed scripts in place. WA
 
 Auth
 
-Magic‑link email → MailHog working server‑side; client‑side login flow missing.
+Magic‑link email → MailHog working server‑side; basic client login implemented.
 
 AI question generation
 
