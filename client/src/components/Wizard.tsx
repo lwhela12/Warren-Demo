@@ -13,15 +13,24 @@ export interface GeneratedQuestion {
   rubric: string[];
 }
 
+export interface Question extends GeneratedQuestion {
+  id: string;
+}
+
 export default function Wizard() {
   const [step, setStep] = useState<Step>(Step.Objective);
   const [objective, setObjective] = useState<string>("");
-  const [questions, setQuestions] = useState<GeneratedQuestion[]>([]);
+  const [surveyId, setSurveyId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const goToStep = (target: Step) => setStep(target);
   const handleBack = () => setStep((prev) => (prev === Step.Questions ? Step.Objective : prev));
+
+  const handleQuestionChange = (qid: string, text: string) => {
+    setQuestions((prev) => prev.map((q) => (q.id === qid ? { ...q, text } : q)));
+  };
 
   const handleObjectiveSubmit = async (obj: string) => {
     setObjective(obj);
@@ -33,14 +42,31 @@ export default function Wizard() {
       const res = await fetch("http://localhost:5001/api/claude", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ objective: obj }),
+        body: JSON.stringify({ objective: obj })
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || "Failed to generate questions");
       }
       const data = await res.json();
-      setQuestions(data.questions);
+
+      const save = await fetch("http://localhost:5001/api/survey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ objective: obj, questions: data.questions })
+      });
+      if (!save.ok) {
+        const err = await save.json();
+        throw new Error(err.error || "Failed to save survey");
+      }
+      const { survey } = await save.json();
+      const merged = survey.questions.map((q: any, idx: number) => ({
+        id: q.id,
+        text: q.text,
+        rubric: data.questions[idx].rubric
+      }));
+      setSurveyId(survey.id);
+      setQuestions(merged);
       setStep(Step.Questions);
     } catch (err: any) {
       setError(err.message || "Unexpected error");
@@ -190,7 +216,9 @@ export default function Wizard() {
       {step === Step.Questions && (
         <WizardStepQuestions
           objective={objective}
+          surveyId={surveyId as string}
           questions={questions}
+          onQuestionChange={handleQuestionChange}
           loading={loading}
           error={error}
           onBack={handleBack}

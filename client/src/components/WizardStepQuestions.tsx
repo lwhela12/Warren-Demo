@@ -1,11 +1,13 @@
 import React from "react";
-import { GeneratedQuestion } from "./Wizard";
+import { Question } from "./Wizard";
 
 interface Props {
+  surveyId: string;
   objective: string;
-  questions: GeneratedQuestion[];
+  questions: Question[];
   loading?: boolean;
   error?: string | null;
+  onQuestionChange: (qid: string, text: string) => void;
   onBack: () => void;
 }
 
@@ -38,7 +40,18 @@ function RubricBadge({ tag }: { tag: string }) {
   );
 }
 
-export default function WizardStepQuestions({ objective, questions, loading, error, onBack }: Props) {
+import { useRef } from "react";
+
+export default function WizardStepQuestions({
+  surveyId,
+  objective,
+  questions,
+  loading,
+  error,
+  onQuestionChange,
+  onBack
+}: Props) {
+  const timers = useRef<Record<string, any>>({});
   return (
     <div style={{ width: "100%", maxWidth: 510, margin: "0 auto" }}>
       <div style={{ marginBottom: 18 }}>
@@ -92,7 +105,7 @@ export default function WizardStepQuestions({ objective, questions, loading, err
           <ul style={{ listStyle: "none", padding: 0 }}>
             {questions.map((q, idx) => (
               <li
-                key={idx}
+                key={q.id}
                 style={{
                   marginBottom: 28,
                   background: "#fff",
@@ -110,7 +123,22 @@ export default function WizardStepQuestions({ objective, questions, loading, err
                     fontSize: 17,
                     verticalAlign: "middle",
                   }}>Q{idx + 1}.</span>
-                  {q.text}
+                  <textarea
+                    value={q.text}
+                    onChange={(e) => {
+                      const txt = e.target.value;
+                      onQuestionChange(q.id, txt);
+                      if (timers.current[q.id]) clearTimeout(timers.current[q.id]);
+                      timers.current[q.id] = setTimeout(() => {
+                        fetch(`http://localhost:5001/api/survey/${surveyId}/question/${q.id}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ text: txt })
+                        }).catch(() => {});
+                      }, 500);
+                    }}
+                    style={{ width: "100%", resize: "vertical" }}
+                  />
                 </div>
                 <div>
                   {q.rubric.map((tag, rIdx) => (
