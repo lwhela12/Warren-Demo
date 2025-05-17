@@ -47,6 +47,7 @@ const handleRegenerate = async (
   feedback: string
 ) => {
   setRegenerating(qid);
+  setError(null);
   try {
     const current = questions.find(q => q.id === qid)?.text || '';
     const res = await fetch(`${API_URL}/api/claude/regenerate`, {
@@ -54,21 +55,23 @@ const handleRegenerate = async (
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ objective, question: current, feedback })
     });
-      if (!res.ok) {
-        throw new Error('Failed to regenerate');
-      }
-      const data = await res.json();
-      setQuestions((prev) =>
-        prev.map((q) =>
-          q.id === qid ? { ...q, text: data.question.text, rubric: data.question.rubric } : q
-        )
-      );
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setRegenerating(null);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to regenerate');
     }
-  };
+    const data = await res.json();
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === qid ? { ...q, text: data.question.text, rubric: data.question.rubric } : q
+      )
+    );
+  } catch (err: any) {
+    console.error(err);
+    setError(err.message || 'Failed to regenerate');
+  } finally {
+    setRegenerating(null);
+  }
+};
 
   const handleObjectiveSubmit = async (obj: string) => {
     setObjective(obj);
