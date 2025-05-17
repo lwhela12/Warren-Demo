@@ -46,7 +46,7 @@
 
 ```
 📦 warren-demo
-├─ /server          # Node/Express  (port 5000)
+├─ /server          # Node/Express  (port 5001)
 │    ├─ /routes
 │    ├─ /controllers
 │    ├─ /db          # SQLite file via Prisma
