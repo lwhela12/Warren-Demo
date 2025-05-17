@@ -183,7 +183,11 @@ export default function WizardStepQuestions({
                           type="button"
                           disabled={isRegen}
                           onClick={async () => {
-                            await onRegenerate(q.id, feedback);
+                            try {
+                              await onRegenerate(q.id, feedback);
+                            } catch (err) {
+                              console.error(err);
+                            }
                             setFeedbacks({ ...feedbacks, [q.id]: "" });
                           }}
                           style={{
