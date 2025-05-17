@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import WizardStepObjective from "./WizardStepObjective";
 import WizardStepQuestions from "./WizardStepQuestions";
+import { API_URL } from "../config";
 
 // Step enums for readability.
 enum Step {
@@ -39,7 +40,7 @@ export default function Wizard() {
     setQuestions([]);
     // Call API
     try {
-      const res = await fetch("http://localhost:5001/api/claude", {
+      const res = await fetch(`${API_URL}/api/claude`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ objective: obj })
@@ -50,7 +51,7 @@ export default function Wizard() {
       }
       const data = await res.json();
 
-      const save = await fetch("http://localhost:5001/api/survey", {
+      const save = await fetch(`${API_URL}/api/survey`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ objective: obj, questions: data.questions })

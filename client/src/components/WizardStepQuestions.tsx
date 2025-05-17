@@ -1,5 +1,6 @@
 import React from "react";
 import { Question } from "./Wizard";
+import { API_URL } from "../config";
 
 interface Props {
   surveyId: string;
@@ -130,7 +131,7 @@ export default function WizardStepQuestions({
                       onQuestionChange(q.id, txt);
                       if (timers.current[q.id]) clearTimeout(timers.current[q.id]);
                       timers.current[q.id] = setTimeout(() => {
-                        fetch(`http://localhost:5001/api/survey/${surveyId}/question/${q.id}`, {
+                        fetch(`${API_URL}/api/survey/${surveyId}/question/${q.id}`, {
                           method: "PATCH",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ text: txt })
