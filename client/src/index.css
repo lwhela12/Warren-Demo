@@ -118,3 +118,49 @@ button:disabled {
   cursor: pointer;
   margin-bottom: 1rem;
 }
+
+.login-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.login-sidebar {
+  width: 180px;
+  background: #2A3F54;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.login-sidebar .active {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.5rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.login-main {
+  flex: 1;
+  background: #F8F7F4;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-header {
+  background: #DDE2E7;
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+
+.login-card {
+  background: #F3F7F2;
+  border: 1px solid #D2E0D1;
+  border-radius: 8px;
+  width: 320px;
+  margin: auto;
+  padding: 2rem;
+  text-align: left;
+}

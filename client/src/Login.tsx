@@ -1,77 +1,92 @@
 import React, { useState } from "react";
+import { colors } from "./theme";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) {
-      setError("Email is required");
-      return;
-    }
-    setStatus("loading");
     setError(null);
 
-    // --- START: Magic Link Bypass ---
-    // The original magic link flow is commented out below.
-    // This new code bypasses email verification for development.
-    // It sets a dummy token in localStorage and reloads the page.
-    // App.tsx will then pick up this token and grant access.
-
-    const dummyToken = `bypassed-token-for-${email}`;
-    localStorage.setItem("jwt", dummyToken);
-    setStatus("success"); // Update UI status
-
-    // Reload the page to allow App.tsx's useAuthToken to pick up the new token
-    window.location.reload();
-
-    // --- END: Magic Link Bypass ---
-
-    /*
-    // Original magic link sending logic:
-    try {
-      const res = await fetch("http://localhost:5001/api/auth/magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error || "Failed to send magic link");
-      }
-      setStatus("success");
-    } catch (err: any) {
-      setError(err.message || "Unexpected error");
-      setStatus("error");
+    if (!username.trim() || !password.trim()) {
+      setError("Username and password are required");
+      return;
     }
-    */
+
+    if (username === "teacher@warren.demo" && password === "password") {
+      localStorage.setItem("jwt", "dummy-teacher-token");
+      localStorage.setItem("userRole", "teacher");
+      window.location.reload();
+      return;
+    }
+
+    if (username === "student@warren.demo" && password === "password") {
+      localStorage.setItem("jwt", "dummy-student-token");
+      localStorage.setItem("userRole", "student");
+      window.location.reload();
+      return;
+    }
+
+    setError("Invalid username or password");
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 400, margin: "0 auto" }}>
-      <label htmlFor="email" style={{ fontWeight: 600 }}>
-        Email
-      </label>
-      <input
-        id="email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        disabled={status === "loading" || status === "success"}
-      />
-      <button type="submit" disabled={status === "loading" || status === "success"}>
-        {status === "loading" ? "Sending..." : "Send Magic Link"}
-      </button>
-      {status === "success" && (
-        <div style={{ marginTop: 10 }}>Check your email for the login link.</div>
-      )}
-      {error && (
-        <div className="error" style={{ marginTop: 10 }}>
-          {error}
+    <div className="login-layout">
+      <div className="login-sidebar">
+        <div>
+          <div className="sidebar-logo">
+            <div style={{ fontSize: 24, fontWeight: 700 }}>Warren</div>
+            <div style={{ fontSize: 12 }}>powered by Nesolagus</div>
+          </div>
+          <div style={{ fontSize: 24 }}>☰</div>
         </div>
-      )}
-    </form>
+        <div className="active">Sign In</div>
+      </div>
+      <div className="login-main">
+        <div className="login-header">
+          <h1 style={{ margin: 0, color: colors.primaryText }}>Sign In</h1>
+          <div style={{ color: colors.secondaryText }}>
+            Your Gateway to Student Voice Insights
+          </div>
+        </div>
+        <div className="login-card">
+          <div className="sidebar-logo" style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 700 }}>Warren</div>
+            <div style={{ fontSize: 12 }}>powered by Nesolagus</div>
+          </div>
+          <form onSubmit={handleSubmit}>
+            <label htmlFor="username" style={{ fontWeight: 600 }}>
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <label htmlFor="password" style={{ fontWeight: 600 }}>
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <div style={{ textAlign: "right", marginBottom: "1rem" }}>
+              <a href="#" style={{ color: colors.primaryDarkBlue }}>
+                Forgot Password?
+              </a>
+            </div>
+            <button type="submit" style={{ background: colors.primaryDarkBlue }}>
+              Log In
+            </button>
+            {error && <div className="error">{error}</div>}
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }
