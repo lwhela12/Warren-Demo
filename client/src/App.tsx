@@ -2,46 +2,38 @@ import React, { useEffect, useState } from "react";
 import Wizard from "./components/Wizard";
 import Sidebar from "./components/Sidebar";
 import DashboardView from "./components/DashboardView";
-
-import { API_URL } from "./config";
+import StudentPlaceholder from "./components/StudentPlaceholder";
 
 import Login from "./Login";
 import "./index.css";
 
-function useAuthToken() {
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("jwt")
-  );
+interface AuthInfo {
+  token: string | null;
+  role: string | null;
+}
+
+function useAuthInfo(): AuthInfo {
+  const [info, setInfo] = useState<AuthInfo>({
+    token: localStorage.getItem("jwt"),
+    role: localStorage.getItem("userRole")
+  });
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const t = url.searchParams.get("token");
-    if (t) {
-      fetch(`${API_URL}/api/auth/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: t })
-      })
-        .then(async (r) => {
-          if (!r.ok) throw new Error("Invalid token");
-          const data = await r.json();
-          localStorage.setItem("jwt", data.jwt);
-          setToken(data.jwt);
-          url.searchParams.delete("token");
-          window.history.replaceState({}, "", url.pathname);
-        })
-        .catch(() => {
-          url.searchParams.delete("token");
-          window.history.replaceState({}, "", url.pathname);
-        });
-    }
+    const handleStorage = () => {
+      setInfo({
+        token: localStorage.getItem("jwt"),
+        role: localStorage.getItem("userRole")
+      });
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  return token;
+  return info;
 }
 
 export default function App() {
-  const token = useAuthToken();
+  const { token, role } = useAuthInfo();
   const [page, setPage] = useState("dashboard");
 
   const handleNavigate = (p: string) => {
@@ -54,15 +46,20 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("jwt");
+    localStorage.removeItem("userRole");
     window.location.reload();
   };
 
-  if (!token) {
+  if (!token || !role) {
     return (
       <div className="page-container">
         <Login />
       </div>
     );
+  }
+
+  if (role === "student") {
+    return <StudentPlaceholder />;
   }
 
   return (
