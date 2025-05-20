@@ -29,3 +29,18 @@ export async function updateQuestionText(
     data: { text }
   });
 }
+
+export async function deploySurvey(id: string): Promise<Survey> {
+  return prisma.survey.update({
+    where: { id },
+    data: { deployedAt: new Date() }
+  });
+}
+
+export async function getActiveSurvey(): Promise<(Survey & { questions: Question[] }) | null> {
+  return prisma.survey.findFirst({
+    where: { deployedAt: { not: null } },
+    orderBy: { deployedAt: 'desc' },
+    include: { questions: true }
+  });
+}

@@ -249,7 +249,10 @@ export default function WizardStepQuestions({
       {questions.every(q => q.status === "approved" || q.status === "excluded") && (
         <button
           type="button"
-          onClick={() => alert("Survey Deployed!")}
+          onClick={async () => {
+            await fetch(`${API_URL}/api/survey/${surveyId}/deploy`, { method: 'POST' });
+            alert('Survey Deployed!');
+          }}
           style={{
             marginTop: 13,
             background: "#228375",
