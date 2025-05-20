@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { createWithQuestions, updateQuestionText } from '../services/surveyService';
+import {
+  createWithQuestions,
+  updateQuestionText,
+  deploySurvey,
+  getActiveSurvey
+} from '../services/surveyService';
 
 const router = Router();
 
@@ -29,6 +34,27 @@ router.patch('/:id/question/:qid', async (req, res) => {
   } catch (error) {
     console.error('Error updating question:', error);
     res.status(500).json({ error: 'Failed to update question' });
+  }
+});
+
+router.post('/:id/deploy', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const survey = await deploySurvey(id);
+    res.json({ survey });
+  } catch (error) {
+    console.error('Error deploying survey:', error);
+    res.status(500).json({ error: 'Failed to deploy survey' });
+  }
+});
+
+router.get('/active', async (_req, res) => {
+  try {
+    const survey = await getActiveSurvey();
+    res.json({ survey });
+  } catch (error) {
+    console.error('Error fetching active survey:', error);
+    res.status(500).json({ error: 'Failed to fetch survey' });
   }
 });
 

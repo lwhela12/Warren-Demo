@@ -13,6 +13,7 @@ model Survey {
   objective String
   questions Question[]
   createdAt DateTime   @default(now())
+  deployedAt DateTime?
 }
 
 model Question {

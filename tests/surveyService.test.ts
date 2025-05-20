@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createWithQuestions } from '../server/services/surveyService';
+import {
+  createWithQuestions,
+  deploySurvey,
+  getActiveSurvey
+} from '../server/services/surveyService';
 import { prisma } from '../server/db/client';
 
 beforeAll(async () => {
@@ -20,5 +24,15 @@ describe('createWithQuestions', () => {
 
     expect(survey.id).toBeDefined();
     expect(survey.questions.length).toBe(2);
+  });
+});
+
+describe('deploySurvey/getActiveSurvey', () => {
+  it('marks survey deployed and fetches it as active', async () => {
+    const survey = await createWithQuestions('Obj', [{ text: 'Q1' }]);
+    await deploySurvey(survey.id);
+    const active = await getActiveSurvey();
+    expect(active?.id).toBe(survey.id);
+    expect(active?.deployedAt).not.toBeNull();
   });
 });
