@@ -56,3 +56,65 @@ button:disabled {
   color: #d32f2f;
   margin-top: 1rem;
 }
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: #2A3F54;
+  color: #fff;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.sidebar-logo {
+  margin-bottom: 1rem;
+}
+
+.sidebar-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #f1f3f5;
+}
+
+.sidebar-item.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.sidebar-separator {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 0.8rem 0;
+}
+
+.main-content {
+  flex: 1;
+  background: #F8F7F4;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #DDE2E7;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.action-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #E3F0DF;
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}

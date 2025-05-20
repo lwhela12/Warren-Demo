@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Wizard from "./components/Wizard";
+import Sidebar from "./components/Sidebar";
+import DashboardView from "./components/DashboardView";
 
 import { API_URL } from "./config";
 
 import Login from "./Login";
-
+import "./index.css";
 
 function useAuthToken() {
   const [token, setToken] = useState<string | null>(
@@ -40,9 +42,42 @@ function useAuthToken() {
 
 export default function App() {
   const token = useAuthToken();
+  const [page, setPage] = useState("dashboard");
+
+  const handleNavigate = (p: string) => {
+    if (p === "results") {
+      alert("Results to come!");
+    } else {
+      setPage(p);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwt");
+    window.location.reload();
+  };
+
+  if (!token) {
+    return (
+      <div className="page-container">
+        <Login />
+      </div>
+    );
+  }
+
   return (
-    <div className="page-container">
-      {token ? <Wizard /> : <Login />}
+    <div className="dashboard-layout">
+      <Sidebar active={page} onNavigate={handleNavigate} onLogout={handleLogout} />
+      <div className="main-content">
+        {page === "builder" ? (
+          <Wizard />
+        ) : (
+          <DashboardView
+            onStartSurvey={() => setPage("builder")}
+            onViewResults={() => alert("Results to come!")}
+          />
+        )}
+      </div>
     </div>
   );
 }
