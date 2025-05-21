@@ -84,7 +84,18 @@ export default function StudentPlaceholder() {
           Logout
         </button>
         <div className="survey-card">
-          <h1 style={{ marginTop: 0, color: colors.primaryText, textAlign: 'center' }}>Thanks for submitting!</h1>
+          <h1 style={{ marginTop: 0, color: colors.primaryText }}>Thanks for submitting!</h1>
+          <button
+            className="survey-button-primary"
+            type="button"
+            onClick={async () => {
+              await fetch(`${API_URL}/api/survey/${survey.id}/seed`, { method: 'POST' });
+              await fetch(`${API_URL}/api/survey/${survey.id}/analyze`, { method: 'POST' });
+              alert('Survey seeded and analyzed');
+            }}
+          >
+            Seed the Survey
+          </button>
         </div>
       </div>
     );

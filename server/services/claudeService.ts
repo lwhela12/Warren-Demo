@@ -143,3 +143,97 @@ export async function regenerateQuestion(
     clearTimeout(id);
   }
 }
+export async function generateBulkStudentAnswers(questionText: string, count = 30): Promise<string[]> {
+  const prompt = `You are a student answering a survey question. Provide ${count} distinct and realistic answers in a JSON array. Question: ${questionText}\n\nReturn strictly a JSON array of ${count} strings. Example: [\"Answer 1\", \"Answer 2\"]`;
+  const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+  const apiKey = process.env.CLAUDE_API_KEY;
+
+  if (!apiKey) {
+    return Array.from({ length: count }, (_, i) => `Sample answer ${i + 1} to: ${questionText}`);
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text?.trim();
+    if (!text) throw new Error('Claude API returned empty content');
+
+    let answers: unknown = JSON.parse(text);
+    if (!Array.isArray(answers)) {
+      throw new Error('Claude response is not an array');
+    }
+    answers = answers.map((a) => String(a));
+    if (answers.length < count) {
+      answers = answers.concat(Array.from({ length: count - answers.length }, () => 'Default generated answer'));
+    } else if (answers.length > count) {
+      answers = answers.slice(0, count);
+    }
+    return answers as string[];
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+export async function getSurveyAnalysisFromClaude(promptContent: string): Promise<string> {
+  const apiKey = process.env.CLAUDE_API_KEY;
+  const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+
+  if (!apiKey) {
+    return 'LLM analysis not available without CLAUDE_API_KEY';
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: promptContent }]
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text?.trim();
+    if (!text) throw new Error('Claude API returned empty content');
+
+    return text;
+  } finally {
+    clearTimeout(id);
+  }
+}
