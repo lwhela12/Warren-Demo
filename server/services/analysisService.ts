@@ -1,5 +1,6 @@
 import { prisma } from '../db/client';
 import { getSurveyAnalysisFromClaude } from './claudeService';
+import { storeSurveyAnalysis } from './surveyService';
 
 export async function formatSurveyForAnalysis(surveyId: string): Promise<string> {
   const survey = await prisma.survey.findUnique({
@@ -26,5 +27,7 @@ export async function analyzeSurveyResponses(surveyId: string): Promise<string> 
   const instructions =
     'You are an expert qualitative data analyst assisting educators. Analyze the following anonymous survey responses. For each question provide themes, overall sentiment, representative quotes, any outliers, and 2-3 key takeaways. After all questions, summarise the entire survey. Return Markdown formatted text.';
   const prompt = `${instructions}\n\n${surveyContent}`;
-  return getSurveyAnalysisFromClaude(prompt);
+  const analysisText = await getSurveyAnalysisFromClaude(prompt);
+  await storeSurveyAnalysis(surveyId, analysisText);
+  return analysisText;
 }

@@ -3,6 +3,7 @@ import Wizard from "./components/Wizard";
 import Sidebar from "./components/Sidebar";
 import DashboardView from "./components/DashboardView";
 import StudentPlaceholder from "./components/StudentPlaceholder";
+import ResultsView from "./components/ResultsView";
 
 import Login from "./Login";
 import "./index.css";
@@ -35,10 +36,12 @@ function useAuthInfo(): AuthInfo {
 export default function App() {
   const { token, role } = useAuthInfo();
   const [page, setPage] = useState("dashboard");
+  const [activeSurveyIdForResults, setActiveSurveyIdForResults] = useState<string | null>(null);
 
-  const handleNavigate = (p: string) => {
+  const handleNavigate = (p: string, surveyId?: string) => {
     if (p === "results") {
-      alert("Results to come!");
+      setActiveSurveyIdForResults(surveyId || null);
+      setPage(p);
     } else {
       setPage(p);
     }
@@ -66,12 +69,14 @@ export default function App() {
     <div className="dashboard-layout">
       <Sidebar active={page} onNavigate={handleNavigate} onLogout={handleLogout} />
       <div className="main-content">
-        {page === "builder" ? (
+        {page === 'results' ? (
+          <ResultsView surveyId={activeSurveyIdForResults} />
+        ) : page === 'builder' ? (
           <Wizard />
         ) : (
           <DashboardView
-            onStartSurvey={() => setPage("builder")}
-            onViewResults={() => alert("Results to come!")}
+            onStartSurvey={() => setPage('builder')}
+            onViewResults={(surveyId?: string) => handleNavigate('results', surveyId)}
           />
         )}
       </div>

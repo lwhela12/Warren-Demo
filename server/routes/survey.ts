@@ -3,7 +3,8 @@ import {
   createWithQuestions,
   updateQuestionText,
   deploySurvey,
-  getActiveSurvey
+  getActiveSurvey,
+  getSurveyAnalysis
 } from '../services/surveyService';
 import {
   seedResponsesForSurvey
@@ -81,6 +82,21 @@ router.post('/:id/analyze', async (req, res) => {
   } catch (error) {
     console.error('Error analyzing survey:', error);
     res.status(500).json({ error: 'Failed to analyze survey' });
+  }
+});
+
+router.get('/:id/analysisResult', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const analysis = await getSurveyAnalysis(id);
+    if (analysis) {
+      res.json({ analysis });
+    } else {
+      res.status(404).json({ error: 'Analysis not found or not yet generated for this survey.' });
+    }
+  } catch (error) {
+    console.error('Error fetching survey analysis:', error);
+    res.status(500).json({ error: 'Failed to fetch survey analysis' });
   }
 });
 

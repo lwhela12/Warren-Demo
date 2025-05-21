@@ -3,7 +3,7 @@ import { colors } from "../theme";
 
 interface Props {
   onStartSurvey: () => void;
-  onViewResults: () => void;
+  onViewResults: (surveyId?: string) => void;
 }
 
 export default function DashboardView({ onStartSurvey, onViewResults }: Props) {
