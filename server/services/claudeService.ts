@@ -180,17 +180,21 @@ export async function generateBulkStudentAnswers(questionText: string, count = 3
     const text = data.content?.[0]?.text?.trim();
     if (!text) throw new Error('Claude API returned empty content');
 
-    let answers: unknown = JSON.parse(text);
-    if (!Array.isArray(answers)) {
+    const parsedJson: unknown = JSON.parse(text);
+
+    if (!Array.isArray(parsedJson)) {
       throw new Error('Claude response is not an array');
     }
-    answers = answers.map((a) => String(a));
+
+    // Cast to any[] first, then map to string[]
+    let answers: string[] = (parsedJson as any[]).map((a: any) => String(a));
+
     if (answers.length < count) {
       answers = answers.concat(Array.from({ length: count - answers.length }, () => 'Default generated answer'));
     } else if (answers.length > count) {
       answers = answers.slice(0, count);
     }
-    return answers as string[];
+    return answers;
   } finally {
     clearTimeout(id);
   }
