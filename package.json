@@ -6,7 +6,7 @@
     "client"
   ],
   "scripts": {
-    "dev": "concurrently -k \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev": "concurrently -k --names \"SERVER,CLIENT\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
     "mailhog": "bash ./scripts/mailhog.sh",
     "tunnel": "bash ./scripts/tunnel.sh",
     "demo:seed": "npm --prefix server run demo:seed",
