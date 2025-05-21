@@ -6,7 +6,8 @@
 
     "dev": "nodemon --watch . --ext ts --exec \"ts-node index.ts\"",
     "db:seed": "ts-node ./db/seed.ts",
-    "demo:seed": "ts-node ./db/demoSeed.ts"
+    "demo:seed": "ts-node ./db/demoSeed.ts",
+    "db:seed:llm-responses": "ts-node ./db/llmResponseSeed.ts"
 
   },
   "dependencies": {
