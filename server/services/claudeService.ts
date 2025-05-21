@@ -195,3 +195,45 @@ export async function generateBulkStudentAnswers(questionText: string, count = 3
     clearTimeout(id);
   }
 }
+
+export async function getSurveyAnalysisFromClaude(promptContent: string): Promise<string> {
+  const apiKey = process.env.CLAUDE_API_KEY;
+  const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+
+  if (!apiKey) {
+    return 'LLM analysis not available without CLAUDE_API_KEY';
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: promptContent }]
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text?.trim();
+    if (!text) throw new Error('Claude API returned empty content');
+
+    return text;
+  } finally {
+    clearTimeout(id);
+  }
+}
