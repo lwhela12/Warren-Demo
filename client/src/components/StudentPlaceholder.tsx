@@ -50,14 +50,14 @@ export default function StudentPlaceholder() {
             right: "1rem",
             background: "none",
             border: "none",
-            color: colors.primaryText,
+            color: colors.primaryDarkBlue || 'blue',
             cursor: "pointer",
           }}
         >
           Logout
         </button>
         <div className="survey-card">
-          <h1 style={{ marginTop: 0, color: colors.primaryText }}>No surveys today!</h1>
+          <h1 style={{ marginTop: 0, color: colors.primaryText, textAlign: 'center' }}>No surveys today!</h1>
         </div>
       </div>
     );
@@ -77,14 +77,14 @@ export default function StudentPlaceholder() {
             right: "1rem",
             background: "none",
             border: "none",
-            color: colors.primaryText,
+            color: colors.primaryDarkBlue || 'blue',
             cursor: "pointer",
           }}
         >
           Logout
         </button>
         <div className="survey-card">
-          <h1 style={{ marginTop: 0, color: colors.primaryText }}>Thanks for submitting!</h1>
+          <h1 style={{ marginTop: 0, color: colors.primaryText, textAlign: 'center' }}>Thanks for submitting!</h1>
         </div>
       </div>
     );
@@ -101,14 +101,14 @@ export default function StudentPlaceholder() {
             right: "1rem",
             background: "none",
             border: "none",
-            color: colors.primaryText,
+            color: colors.primaryDarkBlue || 'blue',
             cursor: "pointer",
           }}
         >
           Logout
         </button>
         <div className="survey-header">
-          <div style={{ fontWeight: 600, color: colors.primaryText }}>Review Answers</div>
+          <div style={{ fontWeight: 600, color: colors.primaryText, textAlign: 'center', width: '100%' }}>Review Answers</div>
         </div>
         <div className="survey-card">
           <ul style={{ listStyle: "none", padding: 0 }}>
@@ -154,7 +154,7 @@ export default function StudentPlaceholder() {
     );
   }
 
-  const progress = ((index) / questions.length) * 100;
+  const progress = questions.length > 0 ? ((index) / questions.length) * 100 : 0;
 
   return (
     <div className="survey-layout">
@@ -166,7 +166,7 @@ export default function StudentPlaceholder() {
           right: "1rem",
           background: "none",
           border: "none",
-          color: colors.primaryText,
+          color: colors.primaryDarkBlue || 'blue',
           cursor: "pointer",
         }}
       >
@@ -174,26 +174,31 @@ export default function StudentPlaceholder() {
       </button>
 
       <div className="survey-header">
-        <div style={{ fontWeight: 600, color: colors.primaryText }}>Student Survey</div>
-        <div style={{ flex: 1, marginLeft: 12 }}>
-          <div className="survey-progress">
-            <div
-              className="survey-progress-bar"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div style={{ fontSize: 12, color: colors.secondaryText }}>{`Question ${index + 1} of ${questions.length}`}</div>
-        </div>
+        <div style={{ fontWeight: 600, color: colors.primaryText, textAlign: 'center', width: '100%' }}>Student Survey</div>
       </div>
 
       <div className="survey-card">
-        <div style={{ fontWeight: 600, marginBottom: 12, color: colors.primaryText }}>{current.text}</div>
+        <div style={{ fontWeight: 600, marginBottom: 12, color: colors.primaryText, textAlign: 'center' }}>{current?.text || 'Loading question...'}</div>
+
+        {questions.length > 0 && current && (
+          <div style={{ width: '100%', marginTop: 8, marginBottom: 16 }}>
+            <div className="survey-progress" style={{ marginBottom: 4 }}>
+              <div
+                className="survey-progress-bar"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div style={{ fontSize: 12, color: colors.secondaryText, textAlign: 'center' }}>{`Question ${index + 1} of ${questions.length}`}</div>
+          </div>
+        )}
+
         <textarea
-          value={answers[current.id] || ''}
+          value={answers[current?.id || ''] || ''}
           onChange={(e) =>
-            setAnswers({ ...answers, [current.id]: e.target.value })
+            current && setAnswers({ ...answers, [current.id]: e.target.value })
           }
           style={{ width: '100%', minHeight: 80 }}
+          disabled={!current}
         />
       </div>
 
