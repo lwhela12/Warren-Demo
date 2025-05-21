@@ -20,6 +20,12 @@ export default function StudentPlaceholder() {
   const [review, setReview] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const handleLogout = () => {
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("userRole");
+    window.location.reload();
+  };
+
   useEffect(() => {
     fetch(`${API_URL}/api/survey/active`)
       .then((res) => res.json())
@@ -35,6 +41,18 @@ export default function StudentPlaceholder() {
   if (!survey) {
     return (
       <div style={{ padding: '2rem' }}>
+        <button 
+          onClick={handleLogout} 
+          style={{ 
+            position: 'absolute', 
+            top: '1rem', 
+            right: '1rem',
+            padding: '0.5rem 1rem',
+            cursor: 'pointer'
+          }}
+        >
+          Logout
+        </button>
         <h1>No surveys today!</h1>
       </div>
     );
@@ -46,6 +64,18 @@ export default function StudentPlaceholder() {
   if (submitted) {
     return (
       <div style={{ padding: '2rem' }}>
+        <button 
+          onClick={handleLogout} 
+          style={{ 
+            position: 'absolute', 
+            top: '1rem', 
+            right: '1rem',
+            padding: '0.5rem 1rem',
+            cursor: 'pointer'
+          }}
+        >
+          Logout
+        </button>
         <h1>Thanks for submitting!</h1>
       </div>
     );
@@ -54,6 +84,18 @@ export default function StudentPlaceholder() {
   if (review) {
     return (
       <div style={{ padding: '2rem' }}>
+        <button 
+          onClick={handleLogout} 
+          style={{ 
+            position: 'absolute', 
+            top: '1rem', 
+            right: '1rem',
+            padding: '0.5rem 1rem',
+            cursor: 'pointer'
+          }}
+        >
+          Logout
+        </button>
         <h2>Review Answers</h2>
         <ul>
           {questions.map((q) => (
@@ -86,6 +128,18 @@ export default function StudentPlaceholder() {
 
   return (
     <div style={{ padding: '2rem' }}>
+      <button 
+        onClick={handleLogout} 
+        style={{ 
+          position: 'absolute', 
+          top: '1rem', 
+          right: '1rem',
+          padding: '0.5rem 1rem',
+          cursor: 'pointer'
+        }}
+      >
+        Logout
+      </button>
       <h2>{current.text}</h2>
       <textarea
         value={answers[current.id] || ''}
