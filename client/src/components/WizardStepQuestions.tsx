@@ -146,7 +146,17 @@ export default function WizardStepQuestions({
                             method: "PATCH",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ text: txt })
-                          }).catch(() => {});
+                          })
+                          .then(res => {
+                            if (!res.ok) {
+                              console.error(`Failed to update question ${q.id}: ${res.status}`);
+                              // Optionally, set an error state here to inform the user
+                            }
+                          })
+                          .catch(err => {
+                            console.error(`Error updating question ${q.id}:`, err);
+                            // Optionally, set an error state here
+                          });
                         }, 500);
                       }}
                       style={{

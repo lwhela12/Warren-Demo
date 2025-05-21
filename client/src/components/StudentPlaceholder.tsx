@@ -29,33 +29,45 @@ export default function StudentPlaceholder() {
 
   useEffect(() => {
     fetch(`${API_URL}/api/survey/active`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch active survey: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         setSurvey(data.survey);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   }, []);
+
+  const renderLogoutButton = () => (
+    <button
+      onClick={handleLogout}
+      style={{
+        position: "absolute",
+        top: "1rem",
+        right: "1rem",
+        background: "none",
+        border: "none",
+        color: colors.primaryDarkBlue || 'blue',
+        cursor: "pointer",
+      }}
+    >
+      Logout
+    </button>
+  );
 
   if (loading) return <div style={{ padding: '2rem' }}>Loading...</div>;
 
   if (!survey) {
     return (
       <div className="survey-layout">
-        <button
-          onClick={handleLogout}
-          style={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            background: "none",
-            border: "none",
-            color: colors.primaryDarkBlue || 'blue',
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
+        {renderLogoutButton()}
         <div className="survey-card">
           <h1 style={{ marginTop: 0, color: colors.primaryText, textAlign: 'center' }}>No surveys today!</h1>
         </div>
@@ -69,32 +81,29 @@ export default function StudentPlaceholder() {
   if (submitted) {
     return (
       <div className="survey-layout">
-        <button
-          onClick={handleLogout}
-          style={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            background: "none",
-            border: "none",
-            color: colors.primaryDarkBlue || 'blue',
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
+        {renderLogoutButton()}
         <div className="survey-card">
-          <h1 style={{ marginTop: 0, color: colors.primaryText }}>Thanks for submitting!</h1>
+          <h1 style={{ marginTop: 0, color: colors.primaryText, textAlign: 'center' }}>Thanks for submitting!</h1>
           <button
             className="survey-button-primary"
             type="button"
             onClick={async () => {
-              await fetch(`${API_URL}/api/survey/${survey.id}/seed`, { method: 'POST' });
-              await fetch(`${API_URL}/api/survey/${survey.id}/analyze`, { method: 'POST' });
-              alert('Survey seeded and analyzed');
+              try {
+                const seedResponse = await fetch(`${API_URL}/api/survey/${survey.id}/seed`, { method: 'POST' });
+                if (!seedResponse.ok) throw new Error(`Seed failed: ${seedResponse.status}`);
+                
+                const analyzeResponse = await fetch(`${API_URL}/api/survey/${survey.id}/analyze`, { method: 'POST' });
+                if (!analyzeResponse.ok) throw new Error(`Analyze failed: ${analyzeResponse.status}`);
+                
+                alert('Survey seeded and analyzed');
+              } catch (err) {
+                console.error("Error during seed/analyze:", err);
+                alert(`An error occurred: ${err instanceof Error ? err.message : String(err)}`);
+              }
             }}
+            style={{ marginTop: '1rem' }}
           >
-            Seed the Survey
+            Seed & Analyze Survey (Dev)
           </button>
         </div>
       </div>
@@ -104,20 +113,7 @@ export default function StudentPlaceholder() {
   if (review) {
     return (
       <div className="survey-layout">
-        <button
-          onClick={handleLogout}
-          style={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            background: "none",
-            border: "none",
-            color: colors.primaryDarkBlue || 'blue',
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
+        {renderLogoutButton()}
         <div className="survey-header">
           <div style={{ fontWeight: 600, color: colors.primaryText, textAlign: 'center', width: '100%' }}>Review Answers</div>
         </div>
@@ -145,17 +141,25 @@ export default function StudentPlaceholder() {
             className="survey-button-primary"
             type="button"
             onClick={async () => {
-              await fetch(`${API_URL}/api/responses`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  responses: questions.map((q) => ({
-                    questionId: q.id,
-                    answer: answers[q.id] || ''
-                  }))
-                })
-              });
-              setSubmitted(true);
+              try {
+                const res = await fetch(`${API_URL}/api/responses`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    responses: questions.map((q) => ({
+                      questionId: q.id,
+                      answer: answers[q.id] || ''
+                    }))
+                  })
+                });
+                if (!res.ok) {
+                  throw new Error(`Failed to submit responses: ${res.status}`);
+                }
+                setSubmitted(true);
+              } catch (err) {
+                console.error(err);
+                alert(`An error occurred while submitting: ${err instanceof Error ? err.message : String(err)}`);
+              }
             }}
           >
             Submit Survey
@@ -169,20 +173,7 @@ export default function StudentPlaceholder() {
 
   return (
     <div className="survey-layout">
-      <button
-        onClick={handleLogout}
-        style={{
-          position: "absolute",
-          top: "1rem",
-          right: "1rem",
-          background: "none",
-          border: "none",
-          color: colors.primaryDarkBlue || 'blue',
-          cursor: "pointer",
-        }}
-      >
-        Logout
-      </button>
+      {renderLogoutButton()}
 
       <div className="survey-header">
         <div style={{ fontWeight: 600, color: colors.primaryText, textAlign: 'center', width: '100%' }}>Student Survey</div>
