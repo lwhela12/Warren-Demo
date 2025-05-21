@@ -57,7 +57,7 @@ export default function DashboardView({ onStartSurvey, onViewResults }: Props) {
       <div className="action-card" onClick={onStartSurvey}>
         Dig New Burrow
       </div>
-      <div className="action-card" onClick={onViewResults}>
+      <div className="action-card" onClick={() => onViewResults()}>
         The Den (Survey Results)
       </div>
     </div>
