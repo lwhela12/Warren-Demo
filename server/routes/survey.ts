@@ -5,6 +5,10 @@ import {
   deploySurvey,
   getActiveSurvey
 } from '../services/surveyService';
+import {
+  seedResponsesForSurvey
+} from '../services/responseService';
+import { analyzeSurveyResponses } from '../services/analysisService';
 
 const router = Router();
 
@@ -55,6 +59,28 @@ router.get('/active', async (_req, res) => {
   } catch (error) {
     console.error('Error fetching active survey:', error);
     res.status(500).json({ error: 'Failed to fetch survey' });
+  }
+});
+
+router.post('/:id/seed', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const created = await seedResponsesForSurvey(id);
+    res.json({ created });
+  } catch (error) {
+    console.error('Error seeding survey:', error);
+    res.status(500).json({ error: 'Failed to seed survey' });
+  }
+});
+
+router.post('/:id/analyze', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const analysis = await analyzeSurveyResponses(id);
+    res.json({ analysis });
+  } catch (error) {
+    console.error('Error analyzing survey:', error);
+    res.status(500).json({ error: 'Failed to analyze survey' });
   }
 });
 
