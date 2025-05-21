@@ -164,3 +164,65 @@ button:disabled {
   padding: 2rem;
   text-align: left;
 }
+
+/* Student Survey Styles */
+.survey-layout {
+  background: #F8F7F4;
+  min-height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.survey-header {
+  background: #DDE2E7;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.survey-progress {
+  height: 8px;
+  background: #CED4DA;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.survey-progress-bar {
+  height: 100%;
+  background: #6EAD7C;
+}
+
+.survey-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.survey-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.survey-button-primary {
+  background-color: #2A3F54;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.survey-button-secondary {
+  background-color: #fff;
+  color: #2A3F54;
+  border: 1px solid #2A3F54;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
