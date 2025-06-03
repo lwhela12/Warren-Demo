@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { colors } from "./theme";
-
+import logo from "./assets/images/nesolagus-logo.png";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -35,52 +34,44 @@ export default function Login() {
   return (
     <div className="login-layout">
       <div className="login-sidebar">
-        <div>
-          <div className="sidebar-logo">
-            <div style={{ fontSize: 24, fontWeight: 700 }}>Warren</div>
-            <div style={{ fontSize: 12 }}>powered by Nesolagus</div>
-          </div>
-          <div style={{ fontSize: 24 }}>☰</div>
-        </div>
-        <div className="active">Sign In</div>
+        <img src={logo} className="sidebar-logo-img" alt="Warren Logo" />
+        <div className="login-sidebar-item active">Sign In</div>
       </div>
       <div className="login-main">
         <div className="login-header">
-          <h1 style={{ margin: 0, color: colors.primaryText }}>Sign In</h1>
-          <div style={{ color: colors.secondaryText }}>
+          <h1 className="header-title">Sign In</h1>
+          <div className="header-subtitle">
             Your Gateway to Student Voice Insights
           </div>
         </div>
         <div className="login-card">
-          <div className="sidebar-logo" style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 24, fontWeight: 700 }}>Warren</div>
-            <div style={{ fontSize: 12 }}>powered by Nesolagus</div>
-          </div>
           <form onSubmit={handleSubmit}>
-            <label htmlFor="username" style={{ fontWeight: 600 }}>
+            <label htmlFor="username" className="field-label">
               Username
             </label>
             <input
               id="username"
               type="text"
+              className="field-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-            <label htmlFor="password" style={{ fontWeight: 600 }}>
+            <label htmlFor="password" className="field-label">
               Password
             </label>
             <input
               id="password"
               type="password"
+              className="field-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-              <a href="#" style={{ color: colors.primaryDarkBlue }}>
+            <div className="login-forgot-link-container">
+              <a href="#" className="login-forgot-link">
                 Forgot Password?
               </a>
             </div>
-            <button type="submit" style={{ background: colors.primaryDarkBlue }}>
+            <button type="submit" className="login-button">
               Log In
             </button>
             {error && <div className="error">{error}</div>}
