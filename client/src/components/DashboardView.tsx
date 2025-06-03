@@ -30,7 +30,7 @@ export default function DashboardView({ onStartSurvey, onViewResults }: Props) {
           <div className="header-avatar" />
         </div>
       </div>
-      <h2 style={{ color: colors.primaryText }}>Dig Your Burrow!</h2>
+      <h2 className="dashboard-hero">Dig Your Burrow!</h2>
       <div className="action-card" onClick={onStartSurvey}>
         Dig New Burrow
       </div>

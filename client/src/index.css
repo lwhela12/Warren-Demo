@@ -152,7 +152,7 @@ button:disabled {
 
 .main-content {
   flex: 1;
-  background: #F8F7F4;
+  background-color: #F6F4ED;
   padding: 1rem;
   box-sizing: border-box;
 }
@@ -167,6 +167,8 @@ button:disabled {
   padding: 0 32px;
   box-sizing: border-box;
   margin-bottom: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 /* Header title and subtitle */
 .header-title {
@@ -245,6 +247,14 @@ button:disabled {
   font-size: 16px;
   padding: 0;
 }
+/* Dashboard Hero Title */
+.dashboard-hero {
+  color: #032E46;
+  font-family: 'Lust Display', serif;
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 24px;
+}
 /* Wizard Step Objective Styles */
 .wizard-objective-form {
   max-width: 800px;
@@ -315,11 +325,18 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #E3F0DF;
+  background-color: #DAEDF0;
+  border: 1px solid #D9D9D9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s, box-shadow 0.2s;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   margin-bottom: 1rem;
+}
+.action-card:hover {
+  background-color: #E3F0DF;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .login-layout {
