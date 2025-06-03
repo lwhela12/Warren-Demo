@@ -11,46 +11,23 @@ export default function DashboardView({ onStartSurvey, onViewResults }: Props) {
     <div>
       <div className="dashboard-header">
         <div>
-          <h1 style={{ margin: 0, color: colors.primaryText }}>Burrow Builder</h1>
-          <div style={{ fontSize: 14, color: colors.secondaryText }}>
-            Welcome to Warren—dig in.
-          </div>
+          <h1 className="header-title">Burrow Builder</h1>
+          <div className="header-subtitle">Welcome to Warren—dig in.</div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="header-search-container">
           <input
             type="text"
             placeholder="Search here"
-            style={{
-              padding: "0.5rem",
-              borderRadius: 4,
-              border: `1px solid ${colors.border}`,
-            }}
+            className="header-search-input"
           />
-          <button
-            style={{
-              padding: "0.5rem",
-              borderRadius: "50%",
-              border: `1px solid ${colors.border}`,
-              background: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            🔍
-          </button>
+          <button className="header-search-button">🔍</button>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div>
-            <div style={{ fontWeight: 600 }}>Megan Riley</div>
-            <div style={{ fontSize: 12 }}>4th | Flanders Elementary</div>
+        <div className="header-user-info">
+          <div className="header-user-text">
+            <p className="header-username">Megan Riley</p>
+            <p className="header-userorg">4th | Flanders Elementary</p>
           </div>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: "#ccc",
-            }}
-          />
+          <div className="header-avatar" />
         </div>
       </div>
       <h2 style={{ color: colors.primaryText }}>Dig Your Burrow!</h2>

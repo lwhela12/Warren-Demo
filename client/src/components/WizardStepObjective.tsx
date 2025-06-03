@@ -11,6 +11,8 @@ interface Props {
 
 export default function WizardStepObjective({ initialObjective = "", loading, error, onSubmit }: Props) {
   const [input, setInput] = useState(initialObjective);
+  const [date, setDate] = useState('');
+  const [title, setTitle] = useState('');
   const [touched, setTouched] = useState(false);
   // For accessibility let user submit with Enter+Ctrl (multiline otherwise)
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -21,28 +23,46 @@ export default function WizardStepObjective({ initialObjective = "", loading, er
     }
   };
   return (
-    <form onSubmit={handleFormSubmit} style={{ maxWidth: 500, margin: "0 auto" }}>
-      <label htmlFor="objective" style={{ fontWeight: 600, fontSize: 18, marginBottom: 5, display: "block", color: colors.primaryDarkBlue }}>
+    <form onSubmit={handleFormSubmit} className="wizard-objective-form">
+      <div className="objective-instructions">
+        Tell us what you’d like to find out today. Start with your goal.
+      </div>
+      <div className="wizard-fields-row">
+        <div className="field-group">
+          <label htmlFor="date" className="field-label">Date</label>
+          <input
+            id="date"
+            type="date"
+            className="field-input date-field"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            disabled={loading}
+          />
+        </div>
+        <div className="field-group">
+          <label htmlFor="title" className="field-label">Survey Title</label>
+          <input
+            id="title"
+            type="text"
+            className="field-input title-field"
+            placeholder="Enter survey title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={loading}
+          />
+        </div>
+      </div>
+      <label htmlFor="objective" className="field-label">
         Survey Objective
       </label>
       <textarea
         id="objective"
         rows={4}
-        placeholder="What is the goal of your survey? (e.g. 'Understand student well-being')"
+        className="wizard-textarea"
+        placeholder="I want to know how students feel today; if about..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
         disabled={loading}
-        style={{
-          marginBottom: 16,
-          padding: "1rem",
-          background: "#fff",
-          border: "1.6px solid #c6dafc",
-          borderRadius: 10,
-          fontSize: "1.07rem",
-          width: "100%",
-          boxSizing: "border-box",
-          outline: "none"
-        }}
       />
       {/* Error block */}
       {(touched && !input.trim()) && (

@@ -1,14 +1,63 @@
 html, body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #f0f2f5;
+  font-family: 'Acumin Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #F6F4ED;
+  color: #032E46;
   height: 100%;
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    box-shadow: none;
+  }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 16px;
+  }
+  .header-title {
+    font-size: 36px;
+  }
+  .header-subtitle {
+    font-size: 20px;
+  }
+  .header-search-container {
+    width: 100%;
+    margin-top: 16px;
+    justify-content: center;
+  }
+  .header-user-info {
+    margin-top: 16px;
+  }
+  .wizard-fields-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .field-input {
+    width: 100% !important;
+  }
+  .wizard-textarea {
+    max-width: 100%;
+  }
+  .header-avatar {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 #root {
   height: 100%;
+}
+/* Headings use Lust Display */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Lust Display', serif;
 }
 
 .page-container {
@@ -62,33 +111,43 @@ button:disabled {
 }
 
 .sidebar {
-  width: 220px;
-  background-color: #2A3F54;
-  color: #fff;
-  padding: 1rem;
+  width: 281px;
+  background-color: #D9D9D9;
+  color: #032E46;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
 }
 
 .sidebar-logo {
-  margin-bottom: 1rem;
+  padding: 22px 0 0 14px;
 }
 
 .sidebar-item {
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  padding: 16px 0 16px 43px;
   cursor: pointer;
-  color: #f1f3f5;
+  color: #032E46;
+  font-size: 24px;
+  font-weight: 300;
+  background: transparent;
+  border-radius: 0;
+  margin-bottom: 8px;
 }
 
 .sidebar-item.active {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  font-weight: 700;
 }
 
 .sidebar-separator {
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid #032E46;
   margin: 0.8rem 0;
+}
+/* Sidebar logo image */
+.sidebar-logo-img {
+  width: 245px;
+  height: 138px;
+  object-fit: contain;
+  display: block;
 }
 
 .main-content {
@@ -102,10 +161,154 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #DDE2E7;
-  padding: 1rem;
-  border-radius: 8px;
+  background-color: #D9D9D9;
+  height: 160px;
+  width: 100%;
+  padding: 0 32px;
+  box-sizing: border-box;
   margin-bottom: 1rem;
+}
+/* Header title and subtitle */
+.header-title {
+  color: #032E46;
+  font-family: 'Lust Display', serif;
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0;
+}
+.header-subtitle {
+  color: #032E46;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  margin: 0;
+}
+/* Search container in header */
+.header-search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #F6F4ED;
+  border-radius: 30px;
+  height: 48px;
+  width: 300px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+.header-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 16px;
+  outline: none;
+}
+.header-search-input::placeholder {
+  color: #999999;
+}
+/* User info in header */
+.header-user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.header-user-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.header-username {
+  color: #032E46;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  margin: 0;
+}
+.header-userorg {
+  color: #032E46;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  margin: 0;
+}
+.header-avatar {
+  width: 48px;
+  height: 48px;
+  background-color: #F6F4ED;
+  border-radius: 9999px;
+}
+/* Search button in header */
+.header-search-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+}
+/* Wizard Step Objective Styles */
+.wizard-objective-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.objective-instructions {
+  color: #032E46;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  margin-bottom: 16px;
+}
+.wizard-fields-row {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+.field-group {
+  display: flex;
+  flex-direction: column;
+}
+.field-label {
+  color: #032E46;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  margin-bottom: 8px;
+}
+.field-input {
+  background-color: #DAEDF0;
+  border-radius: 30px;
+  border: none;
+  padding: 12px 16px;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+.date-field {
+  width: 209px;
+  height: 54px;
+}
+.title-field {
+  width: 360px;
+  height: 54px;
+}
+.wizard-textarea {
+  width: 100%;
+  max-width: 800px;
+  height: 200px;
+  background: #DAEDF0;
+  border-radius: 12px;
+  border: 1px solid #D9D9D9;
+  padding: 1rem;
+  font-family: 'Acumin Pro', sans-serif;
+  font-size: 24px;
+  resize: none;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+.wizard-textarea::placeholder {
+  color: #999999;
+  font-family: 'Acumin Pro', sans-serif;
+  font-weight: 300;
+  font-size: 24px;
 }
 
 .action-card {

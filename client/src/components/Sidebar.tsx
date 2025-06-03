@@ -1,4 +1,5 @@
 import React from "react";
+import logo from "../assets/images/nesolagus-logo.png";
 import { colors } from "../theme";
 
 interface Props {
@@ -25,10 +26,13 @@ export default function Sidebar({ active, onNavigate, onLogout }: Props) {
   );
 
   return (
-    <div className="sidebar" style={{ background: colors.primaryDarkBlue }}>
+    <div className="sidebar">
       <div className="sidebar-logo">
-        <div style={{ fontSize: 24, fontWeight: 700 }}>Warren</div>
-        <div style={{ fontSize: 12 }}>powered by Nesolagus</div>
+        <img
+          className="sidebar-logo-img"
+          src={logo}
+          alt="Warren Logo"
+        />
       </div>
       {item("Dashboard", "dashboard")}
       {item("Burrow Builder", "builder")}

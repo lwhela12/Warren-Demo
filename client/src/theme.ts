@@ -1,7 +1,11 @@
 export const colors = {
-  primaryDarkBlue: '#2A3F54',
+  primaryDarkBlue: '#032E46',
   secondaryGreen: '#6EAD7C',
   offWhite: '#F8F7F4',
+  figmaPageBackground: '#F6F4ED',
+  figmaLightGray: '#D9D9D9',
+  figmaLightBlue: '#DAEDF0',
+  figmaPlaceholderText: '#999999',
   sidebarGray: '#E9ECEF',
   headerBlueGray: '#DDE2E7',
   loginCardBg: '#F3F7F2',
