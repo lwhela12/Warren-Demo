@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { API_URL } from '../config';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface SurveyAnalysis {
   analysis: string;
 }
 
-const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
-  const html = content
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br />');
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
-};
+// Removed SimpleMarkdown in favor of react-markdown with GFM support
 
 interface ResultsViewProps {
   surveyId: string | null;
@@ -80,7 +77,7 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
 
   return (
     <div className="card" style={{ margin: '2rem', padding: '2rem' }}>
-      {/** Back button to list if provided */}
+      {/* Back button to list if provided */}
       {typeof onGoBackToList === 'function' && (
         <button
           onClick={onGoBackToList}
@@ -98,7 +95,11 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
         </button>
       )}
       <h1 style={{ marginTop: 0 }}>Survey Analysis</h1>
-      <SimpleMarkdown content={analysis} />
+      <div style={{ color: '#333', lineHeight: 1.6 }}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {analysis}
+        </ReactMarkdown>
+      </div>
     </div>
   );
 }

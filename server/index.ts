@@ -5,6 +5,7 @@ import authRoutes from './routes/auth';
 import claudeRoutes from './routes/claude';
 import surveyRoutes from './routes/survey';
 import responseRoutes from './routes/response';
+import docsRoutes from './routes/docs';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/claude', claudeRoutes);
 app.use('/api/survey', surveyRoutes);
 app.use('/api/responses', responseRoutes);
+app.use('/api/docs', docsRoutes);
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.send('OK');
