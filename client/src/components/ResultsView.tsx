@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { API_URL } from '../config';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import ResultsCharts from './ResultsCharts';
 
 interface SurveyAnalysis {
   analysis: string;
@@ -19,6 +20,7 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentSurveyId, setCurrentSurveyId] = useState<string | null>(propSurveyId);
+  const [mode, setMode] = useState<'markdown' | 'charts'>('markdown');
 
   useEffect(() => {
     async function fetchActiveSurvey() {
@@ -95,10 +97,20 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
         </button>
       )}
       <h1 style={{ marginTop: 0 }}>Survey Analysis</h1>
+      <div style={{ marginBottom: '1rem' }}>
+        <button onClick={() => setMode('markdown')} disabled={mode === 'markdown'}>
+          Markdown
+        </button>
+        <button onClick={() => setMode('charts')} disabled={mode === 'charts'} style={{ marginLeft: '0.5rem' }}>
+          Charts
+        </button>
+      </div>
       <div style={{ color: '#333', lineHeight: 1.6 }}>
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {analysis}
-        </ReactMarkdown>
+        {mode === 'markdown' ? (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysis}</ReactMarkdown>
+        ) : (
+          currentSurveyId && <ResultsCharts surveyId={currentSurveyId} />
+        )}
       </div>
     </div>
   );

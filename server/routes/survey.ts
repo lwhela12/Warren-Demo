@@ -5,7 +5,8 @@ import {
   deploySurvey,
   getActiveSurvey,
   getSurveyAnalysis,
-  getAnalyzedSurveys
+  getAnalyzedSurveys,
+  getSurveySentiment
 } from '../services/surveyService';
 import {
   seedResponsesForSurvey
@@ -109,6 +110,17 @@ router.get('/:id/analysisResult', async (req, res) => {
   } catch (error) {
     console.error('Error fetching survey analysis:', error);
     res.status(500).json({ error: 'Failed to fetch survey analysis' });
+  }
+});
+
+router.get('/:id/sentiment', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const questions = await getSurveySentiment(id);
+    res.json({ questions });
+  } catch (error) {
+    console.error('Error fetching survey sentiment:', error);
+    res.status(500).json({ error: 'Failed to fetch survey sentiment' });
   }
 });
 
