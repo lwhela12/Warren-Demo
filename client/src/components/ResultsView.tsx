@@ -98,10 +98,19 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
       )}
       <h1 style={{ marginTop: 0 }}>Survey Analysis</h1>
       <div style={{ marginBottom: '1rem' }}>
-        <button onClick={() => setMode('markdown')} disabled={mode === 'markdown'}>
-          Markdown
+        <button
+          className="login-button"
+          onClick={() => setMode('markdown')}
+          disabled={mode === 'markdown'}
+        >
+          Report
         </button>
-        <button onClick={() => setMode('charts')} disabled={mode === 'charts'} style={{ marginLeft: '0.5rem' }}>
+        <button
+          className="login-button"
+          onClick={() => setMode('charts')}
+          disabled={mode === 'charts'}
+          style={{ marginLeft: '0.5rem' }}
+        >
           Charts
         </button>
       </div>
