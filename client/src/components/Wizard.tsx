@@ -78,6 +78,14 @@ const handleRegenerate = async (
           : q
       )
     );
+    if (surveyId) {
+      // Persist the regenerated text to the survey just like manual edits
+      await fetch(`${API_URL}/api/survey/${surveyId}/question/${qid}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: qData.text })
+      });
+    }
   } catch (err: any) {
     console.error(err);
     setError(err.message || 'Failed to regenerate');
