@@ -97,7 +97,7 @@ export async function regenerateQuestion(
 ): Promise<GeneratedQuestion> {
   const methodologyPrompt = `You are an expert survey designer. Use the following Survey Methodology Framework to craft one developmentally appropriate question with rubric tags.\n\n${methodologyFramework}`;
 
-  const prompt = `${methodologyPrompt}\n\nObjective: ${objective}\nCurrent question: ${question}\nTeacher feedback: ${feedback}\nReturn only a JSON that includes the question and rubric tags in the JSON format [{\"text\":...,\"rubric\":[...]}, ...] provide no other text or explanation.`;
+  const prompt = `${methodologyPrompt}\n\nObjective: ${objective}\nCurrent question: ${question}\nTeacher feedback: ${feedback}\nRewrite the question based on the feedback, keeping it as similar as possible unless the feedback requests otherwise.\nReturn only a JSON that includes the question and rubric tags in the JSON format [{\"text\":...,\"rubric\":[...]}, ...] provide no other text or explanation.`;
 
   const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
   const apiKey = process.env.CLAUDE_API_KEY;
