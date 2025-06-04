@@ -14,9 +14,10 @@ const SimpleMarkdown: React.FC<{ content: string }> = ({ content }) => {
 
 interface ResultsViewProps {
   surveyId: string | null;
+  onGoBackToList?: () => void;
 }
 
-export default function ResultsView({ surveyId: propSurveyId }: ResultsViewProps) {
+export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: ResultsViewProps) {
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +80,23 @@ export default function ResultsView({ surveyId: propSurveyId }: ResultsViewProps
 
   return (
     <div className="card" style={{ margin: '2rem', padding: '2rem' }}>
+      {/** Back button to list if provided */}
+      {typeof onGoBackToList === 'function' && (
+        <button
+          onClick={onGoBackToList}
+          style={{
+            marginBottom: '1rem',
+            background: 'none',
+            border: 'none',
+            color: '#007bff',
+            cursor: 'pointer',
+            padding: 0,
+            fontSize: '0.9rem'
+          }}
+        >
+          ← Back to Survey List
+        </button>
+      )}
       <h1 style={{ marginTop: 0 }}>Survey Analysis</h1>
       <SimpleMarkdown content={analysis} />
     </div>

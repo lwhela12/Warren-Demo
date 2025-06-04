@@ -38,8 +38,8 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
   const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
   const apiKey = process.env.CLAUDE_API_KEY;
 
-  // If no API key is provided, return a static stub for local development/test
-  if (!apiKey) {
+  // If running tests or no API key is provided, return a static stub
+  if (process.env.NODE_ENV === 'test' || !apiKey) {
     const templates = [
       `In your own words, what does "${objective}" mean to you?`,
       `Why is ${objective} important in this context?`,
@@ -102,7 +102,7 @@ export async function regenerateQuestion(
   const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
   const apiKey = process.env.CLAUDE_API_KEY;
 
-  if (!apiKey) {
+  if (process.env.NODE_ENV === 'test' || !apiKey) {
     return {
       text: `${question} – revised per feedback`,
       rubric: [{ Category: 'Proficient' }]
@@ -148,7 +148,7 @@ export async function generateBulkStudentAnswers(questionText: string, count = 3
   const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
   const apiKey = process.env.CLAUDE_API_KEY;
 
-  if (!apiKey) {
+  if (process.env.NODE_ENV === 'test' || !apiKey) {
     return Array.from({ length: count }, (_, i) => `Sample answer ${i + 1} to: ${questionText}`);
   }
 

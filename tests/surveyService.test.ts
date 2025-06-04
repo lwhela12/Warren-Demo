@@ -2,17 +2,44 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
   createWithQuestions,
   deploySurvey,
-  getActiveSurvey
+  getActiveSurvey,
+  getAnalyzedSurveys
 } from '../server/services/surveyService';
 import { prisma } from '../server/db/client';
 
-beforeAll(async () => {
-  await prisma.survey.deleteMany();
+beforeEach(async () => {
+  // Clear tables before each test for isolation
+  await prisma.response.deleteMany();
   await prisma.question.deleteMany();
+  await prisma.survey.deleteMany();
 });
 
 afterAll(async () => {
   await prisma.$disconnect();
+});
+
+describe('getAnalyzedSurveys', () => {
+  it('returns only surveys that have analysisResultText set', async () => {
+    // Clear existing surveys
+    await prisma.question.deleteMany();
+    await prisma.survey.deleteMany();
+    // Create two surveys
+    const survey1 = await createWithQuestions('Objective 1', [{ text: 'Q1' }]);
+    const survey2 = await createWithQuestions('Objective 2', [{ text: 'Q2' }]);
+    // Store analysis only for survey2
+    const analysisText = 'Analysis for survey2';
+    await prisma.survey.update({
+      where: { id: survey2.id },
+      data: { analysisResultText: analysisText }
+    });
+    // Fetch analyzed surveys
+    const analyzed = await getAnalyzedSurveys();
+    expect(Array.isArray(analyzed)).toBe(true);
+    // Should include only survey2
+    expect(analyzed.length).toBe(1);
+    expect(analyzed[0].id).toBe(survey2.id);
+    expect(analyzed[0].objective).toBe('Objective 2');
+  });
 });
 
 describe('createWithQuestions', () => {

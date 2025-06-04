@@ -31,36 +31,30 @@ export async function updateQuestionText(
   });
 }
 
+/**
+ * Mark a survey as deployed by setting deployedAt timestamp.
+ */
 export async function deploySurvey(id: string): Promise<Survey> {
-  // NOTE: The 'deployedAt' field might be missing from the Survey model in schema.prisma.
-  // If so, this function will NOT update the deployment status to avoid runtime errors.
-  // IDEAL FIX:
-  // 1. Add 'deployedAt DateTime? @updatedAt' to the Survey model in your schema.prisma file.
-  // 2. Run 'npx prisma generate' to update the Prisma client.
-  // 3. Run 'npx prisma db push' or create and run a migration.
-  // 4. Then, use: return prisma.survey.update({ where: { id }, data: { deployedAt: new Date() } });
-
-  // Current workaround: Fetch and return the survey without updating deployedAt.
-  const survey = await prisma.survey.findUnique({ where: { id } });
+  const survey = await prisma.survey.update({
+    where: { id },
+    data: { deployedAt: new Date() }
+  });
   if (!survey) {
     throw new Error(`Survey with id ${id} not found for deployment.`);
   }
   return survey;
 }
 
+/**
+ * Fetch the most recently deployed survey (based on deployedAt).
+ */
 export async function getActiveSurvey(): Promise<(Survey & { questions: Question[] | null }) | null> {
-  // NOTE: The 'deployedAt' field might be missing from the Survey model in schema.prisma.
-  // If so, this function orders by 'createdAt' as a temporary workaround.
-  // IDEAL FIX: Refer to the fix suggested in 'deploySurvey' and then use:
-  // where: { deployedAt: { not: null } }, orderBy: { deployedAt: 'desc' },
   const survey = await prisma.survey.findFirst({
-    orderBy: { createdAt: 'desc' }, // Workaround: using createdAt
+    where: { deployedAt: { not: null } },
+    orderBy: { deployedAt: 'desc' },
     include: { questions: true }
   });
-
-  if (!survey) {
-    return null;
-  }
+  if (!survey) return null;
   return survey as Survey & { questions: Question[] | null };
 }
 
@@ -96,4 +90,14 @@ export async function getSurveyAnalysis(surveyId: string): Promise<string | null
     select: { analysisResultText: true }
   });
   return survey?.analysisResultText || null;
+}
+/**
+ * Fetch all surveys for which analysisResultText is not null (i.e., analysis has been stored).
+ */
+export async function getAnalyzedSurveys(): Promise<Array<{ id: string; objective: string; createdAt: Date }>> {
+  return prisma.survey.findMany({
+    where: { analysisResultText: { not: null } },
+    select: { id: true, objective: true, createdAt: true },
+    orderBy: { createdAt: 'desc' }
+  });
 }

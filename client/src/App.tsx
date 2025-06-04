@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import DashboardView from "./components/DashboardView";
 import StudentPlaceholder from "./components/StudentPlaceholder";
 import ResultsView from "./components/ResultsView";
+import DenHome from "./components/DenHome";
 
 import Login from "./Login";
 import "./index.css";
@@ -65,12 +66,24 @@ export default function App() {
     return <StudentPlaceholder />;
   }
 
+  // Callback for DenHome to select a specific survey from the list
+  const handleSelectSurveyInDen = (surveyId: string) => {
+    setActiveSurveyIdForResults(surveyId);
+  };
+
   return (
     <div className="dashboard-layout">
       <Sidebar active={page} onNavigate={handleNavigate} onLogout={handleLogout} />
       <div className="main-content">
         {page === 'results' ? (
-          <ResultsView surveyId={activeSurveyIdForResults} />
+          activeSurveyIdForResults ? (
+            <ResultsView
+              surveyId={activeSurveyIdForResults}
+              onGoBackToList={() => setActiveSurveyIdForResults(null)}
+            />
+          ) : (
+            <DenHome onSelectSurvey={handleSelectSurveyInDen} />
+          )
         ) : page === 'builder' ? (
           <Wizard />
         ) : (

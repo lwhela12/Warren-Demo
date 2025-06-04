@@ -4,7 +4,8 @@ import {
   updateQuestionText,
   deploySurvey,
   getActiveSurvey,
-  getSurveyAnalysis
+  getSurveyAnalysis,
+  getAnalyzedSurveys
 } from '../services/surveyService';
 import {
   seedResponsesForSurvey
@@ -82,6 +83,17 @@ router.post('/:id/analyze', async (req, res) => {
   } catch (error) {
     console.error('Error analyzing survey:', error);
     res.status(500).json({ error: 'Failed to analyze survey' });
+  }
+});
+
+// GET /api/survey/analyzed
+router.get('/analyzed', async (_req, res) => {
+  try {
+    const surveys = await getAnalyzedSurveys();
+    res.json({ surveys });
+  } catch (error) {
+    console.error('Error fetching analyzed surveys:', error);
+    res.status(500).json({ error: 'Failed to fetch analyzed surveys' });
   }
 });
 
