@@ -22,6 +22,8 @@ model Question {
   surveyId   String
   text       String
   createdAt  DateTime   @default(now())
+  sentimentScore Float?
+  sentimentSummary String?
   survey     Survey     @relation(fields: [surveyId], references: [id])
   responses  Response[]
 }

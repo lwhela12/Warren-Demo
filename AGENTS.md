@@ -155,6 +155,7 @@ AI Summary & Teacher Results Screen (Sprint 4)
 analysisService.summarizeResponses using Claude/OpenAI; cache result.
 
 Results page shows charts + AI narrative.
+Sentiment analysis stored per question via sentimentService; GET /api/survey/:id/sentiment powers new ResultsCharts UI toggle.
 
 Exports
 

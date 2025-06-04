@@ -91,6 +91,15 @@ export async function getSurveyAnalysis(surveyId: string): Promise<string | null
   });
   return survey?.analysisResultText || null;
 }
+
+export async function getSurveySentiment(
+  surveyId: string
+): Promise<Array<{ id: string; text: string; sentimentScore: number | null }>> {
+  return prisma.question.findMany({
+    where: { surveyId },
+    select: { id: true, text: true, sentimentScore: true }
+  });
+}
 /**
  * Fetch all surveys for which analysisResultText is not null (i.e., analysis has been stored).
  */

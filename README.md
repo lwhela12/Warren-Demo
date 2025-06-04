@@ -87,3 +87,15 @@ The endpoint revises the provided `question` using the teacher's `feedback` and 
 ```json
 { "question": { "text": "...", "rubric": ["..."] } }
 ```
+
+### Sentiment Analysis
+
+`GET /api/survey/:id/sentiment`
+
+Returns sentiment scores for each question:
+
+```json
+{ "questions": [ { "id": "...", "text": "...", "sentimentScore": 0.5 } ] }
+```
+
+In the results screen you can toggle between the Markdown analysis and a chart view powered by this endpoint.
