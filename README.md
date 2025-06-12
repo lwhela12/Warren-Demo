@@ -28,8 +28,10 @@ echo "VITE_API_URL=http://localhost:5001" > client/.env
 ### Scripts
 - `npm run dev`  
   Start server (Express on port 5001) and client (Vite on port 3000).
- - `npm run mailhog`  
-   Launch MailHog (SMTP: 1025, HTTP UI: 8025).
+- `npm run mailhog`  
+  Launch MailHog (SMTP: 1025, HTTP UI: 8025).
+- `npm run tunnel`  
+  Start an ngrok tunnel for external access (requires `NGROK_AUTH_TOKEN`).
 - `npm run demo:seed`  
   Seed canned survey objectives into the database (`data/warren.db`).
 - `npm run db:seed`  
@@ -43,6 +45,11 @@ echo "VITE_API_URL=http://localhost:5001" > client/.env
 - `PORT`  - server port (default: 5001)
 - `DATABASE_URL`  - Prisma SQLite URL (default: file:../data/warren.db)
 - `CLIENT_URL`  - client base URL for magic-link (default: http://localhost:3000)
+- `JWT_SECRET` - secret for signing magic-link tokens (default: demo-secret)
+- `MAILHOG_SMTP_HOST` - SMTP host for MailHog (default: localhost)
+- `MAILHOG_SMTP_PORT` - SMTP port for MailHog (default: 1025)
+- `MAILHOG_HTTP_PORT` - HTTP UI port for MailHog (default: 8025)
+- `NGROK_AUTH_TOKEN` - auth token for ngrok tunneling (optional)
 - `VITE_API_URL` - API base URL for the React app (default: http://localhost:5001)
 - `CLAUDE_API_KEY` - Anthropic Claude API key for question generation (optional)
 - `CLAUDE_MODEL` - Claude model name (default: claude-3-haiku-20240307)
@@ -53,6 +60,7 @@ echo "VITE_API_URL=http://localhost:5001" > client/.env
 /README.md
 /package.json         # root workspace
 /pnpm-workspace.yaml
+/docs                  # design docs and methodology framework
 /data                  # SQLite file
 /server                # Express API + Prisma
 /client                # React + Vite app
@@ -70,32 +78,71 @@ GitHub Actions runs ESLint and Vitest on PRs to `main`.
 3. MailHog (http://localhost:8025) will receive an email containing a magic link.
 4. Clicking the link verifies the token and stores a JWT in `localStorage`, unlocking the survey wizard.
 
-## API
+## API Endpoints
 
-### Regenerate a Question
+### Health Check
+
+`GET /api/health`
+
+Returns `OK` if the server is running.
+
+### Authentication
+
+`POST /api/auth/magic-link`
+Request body: `{ "email": "string" }`
+Sends a magic link to the provided email address.
+
+`POST /api/auth/verify`
+Request body: `{ "token": "string" }`
+Verifies the magic link token and returns a JWT: `{ "jwt": "string" }`.
+
+### Question Generation
+
+`POST /api/claude`
+Request body: `{ "objective": "string" }`
+Returns generated questions with rubric tags: `{ "questions": [ { "text": "...", "rubric": [ ... ] }, ... ] }`.
 
 `POST /api/claude/regenerate`
+Request body: `{ "objective": "string", "question": "string", "feedback": "string" }`
+Regenerates a question based on feedback: `{ "question": { "text": "...", "rubric": [ ... ] } }`.
 
-Request body:
+### Survey Management
 
-```json
-{ "objective": "string", "question": "string", "feedback": "string" }
-```
+`POST /api/survey`
+Request body: `{ "objective": "string", "questions": [ { "text": "string" }, ... ] }`
+Creates a survey and persists questions: `{ "survey": { "id": "string", "questions": [ { "id": "string", "text": "string" }, ... ] } }`.
 
-The endpoint revises the provided `question` using the teacher's `feedback` and returns:
+`PATCH /api/survey/:id/question/:qid`
+Request body: `{ "text": "string" }`
+Updates the text of a question: `{ "question": { "id": "string", "text": "string" } }`.
 
-```json
-{ "question": { "text": "...", "rubric": ["..."] } }
-```
+`POST /api/survey/:id/deploy`
+Marks the survey as deployed (sets `deployedAt` timestamp): `{ "survey": { "id": "string", "deployedAt": "Date" } }`.
 
-### Sentiment Analysis
+`GET /api/survey/active`
+Fetches the most recently deployed survey with questions: `{ "survey": { "id": "string", "questions": [ { "id": "string", "text": "string" }, ... ] } }`.
+
+### Student Responses
+
+`POST /api/responses`
+Request body: `{ "responses": [ { "questionId": "string", "answer": "string" }, ... ] }`
+Saves student responses: `{ "message": "Saved" }`.
+
+### Analysis & Sentiment
+
+`POST /api/survey/:id/analyze`
+Triggers AI analysis of responses and sentiment scoring: `{ "analysis": "string" }`.
+
+`GET /api/survey/analyzed`
+Lists surveys with analysis available: `{ "surveys": [ { "id": "string", "objective": "string", "createdAt": "Date" }, ... ] }`.
+
+`GET /api/survey/:id/analysisResult`
+Retrieves stored AI analysis text: `{ "analysis": "string" }`.
 
 `GET /api/survey/:id/sentiment`
+Retrieves sentiment scores per question: `{ "questions": [ { "id": "string", "text": "string", "sentimentScore": number }, ... ] }`.
 
-Returns sentiment scores for each question:
+### Documentation
 
-```json
-{ "questions": [ { "id": "...", "text": "...", "sentimentScore": 0.5 } ] }
-```
-
-In the results screen you can toggle between the Markdown analysis and a chart view powered by this endpoint.
+`GET /api/docs/methodology`
+Serves the Survey Methodology Framework markdown used in prompts.

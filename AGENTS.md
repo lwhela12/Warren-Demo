@@ -1,6 +1,6 @@
 AGENTS.md
 
-A tactical field‐guide for developers working on Warren.Last updated: 2025‑05‑16
+A tactical field‐guide for developers working on Warren. Last updated: 2025‑06‑12
 
 1  Project Snapshot
 
@@ -10,37 +10,39 @@ Status
 
 Dev environment
 
-Monorepo with workspaces, npm run dev launches Express API (≈5001) & React/Vite client (≈3000). MailHog + ngrok scripts available.
+Monorepo with workspaces; `npm run dev` launches Express API (port 5001) and React/Vite client (port 3000). MailHog and ngrok helper scripts available.
 
 Database
 
-SQLite via Prisma. Models: Survey, Question, Response; seed scripts in place. WAL mode enabled.
+SQLite via Prisma. Models: Survey, Question, Response; seed and demoSeed scripts in place.
 
 Auth
 
-Magic‑link email → MailHog working server‑side; basic client login implemented.
+Magic-link email authentication (via MailHog); basic client login with JWT-based auth implemented.
 
 AI question generation
 
-/api/claude endpoint returns stubbed 5 questions with rubric tags. No real Claude/OpenAI call yet.
+/api/claude endpoint returns 5 questions with rubric tags, using the Claude API when `CLAUDE_API_KEY` is set; falls back to a static stub otherwise.
 
 Teacher UI
 
-Two‑step wizard: enter objective → view generated questions (with rubric badges). No editing/regeneration.
+Two-step wizard: enter objective → view questions with rubric badges; supports inline editing, debounced save, and regeneration via feedback.
 
 Persistence
 
-Questions remain in local React state; no survey saved to DB; no student link.
+Generated surveys and questions are persisted in the database via Prisma; survey creation and question updates handled server-side.
 
 Student + Results
 
-Share link/QR, student form, response storage, AI summary, PDF/Slides exports not implemented.
+Student app renders a mobile-first survey form, saves responses, and provides AI-driven analysis with sentiment charts; exports (PDF/Slides) and share link/QR still to be implemented.
 
 CI / lint / tests
 
-Vitest + ESLint deps installed; 1 sample test; no GitHub Actions workflow yet.
+ESLint and Vitest in place; GitHub Actions CI runs lint and tests on PRs to `main`.
 
-High‑level: Sprint 0–1 essentials are running; Sprints 2‑4 are partially or entirely outstanding.
+High‑level
+
+Sprints 0–2 complete (dev env, auth, AI gen, persistence); Sprint 3 student flow and analysis UI implemented; remaining: share link/QR, PDF/Slides exports, branding, end-to-end tests.
 
 2  Coding Standards
 
