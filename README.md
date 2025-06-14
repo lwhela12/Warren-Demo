@@ -166,9 +166,9 @@ Returns the next node in the sequence: `{ "node": { ... } }`.
 ### Student Responses
 
 `POST /api/responses`
-Request body should include an array of objects each containing a `questionId` and the student's `answer`:
-`{ "responses": [ { "questionId": "string", "answer": "string" }, ... ] }`
-The `questionId` corresponds to the question record returned when fetching a survey.
+Request body should include an array of objects with the student's `answer` and either a `questionId` or a `nodeId` for branching surveys:
+`{ "responses": [ { "questionId": "string", "answer": "string" }, { "nodeId": "string", "answer": "string" } ] }`
+The `questionId` corresponds to the question record returned when fetching a survey. Branching surveys send `nodeId` instead.
 Successful requests return `{ "message": "Saved" }`.
 
 ### Analysis & Sentiment

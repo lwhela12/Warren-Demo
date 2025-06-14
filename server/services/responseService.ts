@@ -8,7 +8,13 @@ export interface ResponseInput {
 
 export async function saveResponses(responses: ResponseInput[]): Promise<void> {
   if (responses.length === 0) return;
-  await prisma.response.createMany({ data: responses });
+  await prisma.response.createMany({
+    data: responses.map((r) => ({
+      questionId: r.questionId ?? null,
+      nodeId: r.nodeId,
+      answer: r.answer
+    }))
+  });
 }
 
 import { generateBulkStudentAnswers } from './claudeService';
