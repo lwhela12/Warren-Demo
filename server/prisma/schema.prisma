@@ -31,11 +31,13 @@ model Question {
 }
 
 model Response {
-  id         String    @id @default(cuid())
-  nodeId     String
+  id         String   @id @default(cuid())
+  questionId String
+  nodeId     String?
   answer     String
-  createdAt  DateTime  @default(now())
-  node       Node      @relation(fields: [nodeId], references: [id])
+  createdAt  DateTime @default(now())
+  question   Question @relation(fields: [questionId], references: [id])
+  node       Node?    @relation(fields: [nodeId], references: [id])
 }
 
 /// New models for branching surveys

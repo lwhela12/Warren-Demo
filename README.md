@@ -166,8 +166,10 @@ Returns the next node in the sequence: `{ "node": { ... } }`.
 ### Student Responses
 
 `POST /api/responses`
-Request body: `{ "responses": [ { "questionId": "string", "answer": "string" }, ... ] }`
-Saves student responses: `{ "message": "Saved" }`.
+Request body should include an array of objects each containing a `questionId` and the student's `answer`:
+`{ "responses": [ { "questionId": "string", "answer": "string" }, ... ] }`
+The `questionId` corresponds to the question record returned when fetching a survey.
+Successful requests return `{ "message": "Saved" }`.
 
 ### Analysis & Sentiment
 
