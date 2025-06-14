@@ -24,6 +24,23 @@ mkdir -p data
 touch data/.gitkeep
 ```
 
+### Database setup
+
+Generate the Prisma client and apply the schema to your new SQLite database:
+```bash
+cd server
+npx prisma generate
+npx prisma db push --schema=prisma/schema.prisma
+cd ..
+```
+
+Seed the database with sample data:
+```bash
+npm run db:seed        # seed sample survey & responses
+npm run demo:seed      # seed demo survey objectives
+npm --prefix server run db:seed:llm-responses  # optional: seed LLM responses
+```
+
 Create a `client/.env` file and set the API URL used by the React app:
 
 ```
@@ -41,6 +58,8 @@ echo "VITE_API_URL=http://localhost:5001" > client/.env
   Seed canned survey objectives into the database (`data/warren.db`).
 - `npm run db:seed`  
   Create/update SQLite schema and seed sample data (`data/warren.db`).
+- `npm --prefix server run db:seed:llm-responses`  
+  Seed AI-generated student responses via LLM stub (optional).
 - `npm run lint`  
   Run ESLint.
 - `npm run test`  
