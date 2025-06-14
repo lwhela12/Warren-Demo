@@ -1,7 +1,8 @@
 import { prisma } from '../prisma/client';
 
 export interface ResponseInput {
-  questionId: string;
+  questionId?: string;
+  nodeId?: string;
   answer: string;
 }
 

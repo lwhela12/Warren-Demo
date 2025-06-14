@@ -8,21 +8,21 @@ This document tracks the rollout of branching survey functionality. It lists the
 - New `BranchingGraphView` component visualises and edits the graph.
 - Surveys can be saved via `PUT /api/survey/branching/:id`.
 
-**Status:** _not started_
+**Status:** _complete_
 
 ## Phase 2 – Student-Facing Branching Survey
 - Student flow fetches first node via `/api/survey/branching/:id/start`.
 - After each answer, POST to `/api/survey/branching/:id/next` to get the next node.
 - Ends when a terminal node is reached and responses are submitted.
 
-**Status:** _not started_
+**Status:** _complete_
 
 ## Phase 3 – Integration and UI Polish
 - Routing updates to use the new builder from the dashboard.
 - Results view handles branching surveys.
 - UI refinements: drag‑and‑drop nodes, editing controls, etc.
 
-**Status:** _not started_
+**Status:** _complete_
 
 ---
 *Last updated: 2025-06-14
