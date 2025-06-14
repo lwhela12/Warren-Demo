@@ -32,11 +32,11 @@ model Question {
 
 model Response {
   id         String   @id @default(cuid())
-  questionId String
+  questionId String?
   nodeId     String?
   answer     String
   createdAt  DateTime @default(now())
-  question   Question @relation(fields: [questionId], references: [id])
+  question   Question? @relation(fields: [questionId], references: [id])
   node       Node?    @relation(fields: [nodeId], references: [id])
 }
 

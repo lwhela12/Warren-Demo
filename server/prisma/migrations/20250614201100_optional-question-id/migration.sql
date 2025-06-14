@@ -1,0 +1,2 @@
+-- Manual migration for optional questionId
+-- TODO: make questionId nullable and adjust foreign key
