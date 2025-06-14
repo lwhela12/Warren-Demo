@@ -241,3 +241,59 @@ export async function getSurveyAnalysisFromClaude(promptContent: string): Promis
     clearTimeout(id);
   }
 }
+
+export async function generateBranchingSurvey(objective: string): Promise<{ nodes: any[]; edges: any[] }> {
+  const prompt = `You are a survey designer creating a branching survey for the objective: "${objective}".
+Return ONLY a valid JSON object with "nodes" and "edges" keys.
+- Nodes must have a unique "id", a "type" ('message' or 'question-multiple-choice'), and "content" ({ "text": "...", "options": [...] }). The first node id must be "entry".
+- Edges must have a "source" id, a "target" id, and an optional "conditionValue" string which matches an option from the source question.`;
+
+  const apiKey = process.env.CLAUDE_API_KEY;
+  const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+
+  if (process.env.NODE_ENV === 'test' || !apiKey) {
+    const nodes = [
+      { id: 'entry', surveyId: '', type: 'message', content: { text: 'Start', options: [] } },
+      { id: 'q1', surveyId: '', type: 'question-multiple-choice', content: { text: 'Yes or No?', options: ['yes', 'no'] } },
+      { id: 'end', surveyId: '', type: 'message', content: { text: 'Thanks', options: [] } }
+    ];
+    const edges = [
+      { source: 'entry', target: 'q1' },
+      { source: 'q1', target: 'end', conditionValue: 'yes' },
+      { source: 'q1', target: 'end', conditionValue: 'no' }
+    ];
+    return { nodes, edges };
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${errText}`);
+    }
+
+    const responseJson = await res.json();
+    const content = responseJson.content?.[0]?.text?.trim();
+    if (!content) throw new Error('Claude API returned empty content');
+    return JSON.parse(content);
+  } finally {
+    clearTimeout(id);
+  }
+}

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import claudeRoutes from './routes/claude';
 import surveyRoutes from './routes/survey';
+import branchingSurveyRoutes from './routes/branchingSurvey';
 import responseRoutes from './routes/response';
 import docsRoutes from './routes/docs';
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/claude', claudeRoutes);
 app.use('/api/survey', surveyRoutes);
+app.use('/api/survey/branching', branchingSurveyRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/docs', docsRoutes);
 
