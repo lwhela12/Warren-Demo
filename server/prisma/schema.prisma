@@ -9,41 +9,29 @@ datasource db {
 }
 
 model Survey {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   objective String
-  createdAt DateTime @default(now())
+  questions Question[]
+  createdAt DateTime   @default(now())
   deployedAt DateTime?
   analysisResultText String?
-  nodes     Node[]
-  edges     Edge[]
 }
 
-model Node {
-  id           String   @id @default(cuid())
-  surveyId     String
-  survey       Survey   @relation(fields: [surveyId], references: [id])
-  type         String
-  content      Json
-  outgoingEdges Edge[]  @relation("SourceNode")
-  incomingEdges Edge[]  @relation("TargetNode")
-  responses    Response[]
-}
-
-model Edge {
-  id           String  @id @default(cuid())
-  surveyId     String
-  survey       Survey  @relation(fields: [surveyId], references: [id])
-  sourceNodeId String
-  targetNodeId String
-  sourceNode   Node    @relation("SourceNode", fields: [sourceNodeId], references: [id])
-  targetNode   Node    @relation("TargetNode", fields: [targetNodeId], references: [id])
-  conditionValue String?
+model Question {
+  id         String     @id @default(cuid())
+  surveyId   String
+  text       String
+  createdAt  DateTime   @default(now())
+  sentimentScore Float?
+  sentimentSummary String?
+  survey     Survey     @relation(fields: [surveyId], references: [id])
+  responses  Response[]
 }
 
 model Response {
-  id        String   @id @default(cuid())
-  nodeId    String
-  node      Node     @relation(fields: [nodeId], references: [id])
-  answer    String
-  createdAt DateTime @default(now())
+  id         String    @id @default(cuid())
+  questionId String
+  answer     String
+  createdAt  DateTime  @default(now())
+  question   Question  @relation(fields: [questionId], references: [id])
 }

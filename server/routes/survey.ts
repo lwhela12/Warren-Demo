@@ -9,67 +9,11 @@ import {
   getSurveySentiment
 } from '../services/surveyService';
 import {
-  createBranchingSurvey,
-  updateBranchingSurvey,
-  getEntryNode,
-  getNextNode
-} from '../services/branchingSurveyService';
-import { generateBranchingSurvey } from '../services/claudeService';
-import {
   seedResponsesForSurvey
 } from '../services/responseService';
 import { analyzeSurveyResponses } from '../services/analysisService';
 
 const router = Router();
-
-router.post('/branching', async (req, res) => {
-  const { objective } = req.body;
-  if (!objective) {
-    return res.status(400).json({ error: 'Objective is required' });
-  }
-  try {
-    const graph = await generateBranchingSurvey(objective);
-    const survey = await createBranchingSurvey(objective, graph);
-    res.json({ survey });
-  } catch (error) {
-    console.error('Error creating branching survey:', error);
-    res.status(500).json({ error: 'Failed to create survey' });
-  }
-});
-
-router.put('/branching/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const survey = await updateBranchingSurvey(id, req.body);
-    res.json({ survey });
-  } catch (error) {
-    console.error('Error updating branching survey:', error);
-    res.status(500).json({ error: 'Failed to update survey' });
-  }
-});
-
-router.get('/branching/:id/start', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const node = await getEntryNode(id);
-    res.json({ node });
-  } catch (error) {
-    console.error('Error getting entry node:', error);
-    res.status(500).json({ error: 'Failed to fetch entry node' });
-  }
-});
-
-router.post('/branching/:id/next', async (req, res) => {
-  const { id } = req.params;
-  const { currentNodeId, answer } = req.body;
-  try {
-    const node = await getNextNode(id, currentNodeId, answer);
-    res.json({ node });
-  } catch (error) {
-    console.error('Error getting next node:', error);
-    res.status(500).json({ error: 'Failed to fetch next node' });
-  }
-});
 
 router.post('/', async (req, res) => {
   const { objective, questions } = req.body;
