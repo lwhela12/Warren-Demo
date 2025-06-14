@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import WizardStepObjective from "./WizardStepObjective";
-import WizardStepQuestions from "./WizardStepQuestions";
+import FlowEditor from "./FlowEditor";
 import { API_URL } from "../config";
 import { colors } from "../theme";
 
@@ -276,20 +276,7 @@ const handleRegenerate = async (
           onSubmit={handleObjectiveSubmit}
         />
       )}
-      {step === Step.Questions && (
-        <WizardStepQuestions
-          objective={objective}
-          surveyId={surveyId as string}
-          questions={questions}
-          regeneratingId={regenerating}
-          onQuestionChange={handleQuestionChange}
-          onStatusChange={handleStatusChange}
-          onRegenerate={handleRegenerate}
-          loading={loading}
-          error={error}
-          onBack={handleBack}
-        />
-      )}
+      {step === Step.Questions && <FlowEditor />}
     </div>
   );
 }

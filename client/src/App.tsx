@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Wizard from "./components/Wizard";
 import Sidebar from "./components/Sidebar";
 import DashboardView from "./components/DashboardView";
-import StudentPlaceholder from "./components/StudentPlaceholder";
+import BranchingSurveyPlayer from "./components/BranchingSurveyPlayer";
 import ResultsView from "./components/ResultsView";
 import DenHome from "./components/DenHome";
 
@@ -63,7 +63,7 @@ export default function App() {
   }
 
   if (role === "student") {
-    return <StudentPlaceholder />;
+    return <BranchingSurveyPlayer surveyId="active" />;
   }
 
   // Callback for DenHome to select a specific survey from the list
