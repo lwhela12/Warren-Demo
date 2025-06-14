@@ -1,4 +1,4 @@
-import { prisma } from '../db/client';
+import { prisma } from '../prisma/client';
 import { Survey, Question } from '@prisma/client';
 
 export interface QuestionInput {

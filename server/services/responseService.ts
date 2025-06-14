@@ -1,4 +1,4 @@
-import { prisma } from '../db/client';
+import { prisma } from '../prisma/client';
 
 export interface ResponseInput {
   questionId: string;

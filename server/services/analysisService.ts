@@ -1,4 +1,4 @@
-import { prisma } from '../db/client';
+import { prisma } from '../prisma/client';
 import { getSurveyAnalysisFromClaude } from './claudeService';
 import { storeSurveyAnalysis } from './surveyService';
 import { calculateSentiment } from './sentimentService';

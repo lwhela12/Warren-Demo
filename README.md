@@ -14,9 +14,14 @@ npm install
 ```
 
 Copy `.env.example` to `server/.env` before running the development server:
-
 ```
 cp .env.example server/.env
+```
+
+Ensure there is a `data` directory at the repo root (for the SQLite database):
+```
+mkdir -p data
+touch data/.gitkeep
 ```
 
 Create a `client/.env` file and set the API URL used by the React app:
