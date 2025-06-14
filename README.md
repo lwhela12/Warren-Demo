@@ -146,6 +146,23 @@ Marks the survey as deployed (sets `deployedAt` timestamp): `{ "survey": { "id":
 `GET /api/survey/active`
 Fetches the most recently deployed survey with questions: `{ "survey": { "id": "string", "questions": [ { "id": "string", "text": "string" }, ... ] } }`.
 
+### Branching Surveys
+
+`POST /api/survey/branching`
+Request body: `{ "objective": "string" }`
+Creates and stores a branching survey graph.
+
+`PUT /api/survey/branching/:id`
+Request body: full graph `{ nodes: [...], edges: [...] }`
+Updates the nodes and edges of a survey.
+
+`GET /api/survey/branching/:id/start`
+Returns the entry node object `{ "node": {...} }`.
+
+`POST /api/survey/branching/:id/next`
+Request body: `{ "currentNodeId": "string", "answer": "string" }`
+Returns the next node based on the provided answer.
+
 ### Student Responses
 
 `POST /api/responses`

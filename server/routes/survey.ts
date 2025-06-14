@@ -29,6 +29,9 @@ router.post('/branching', async (req, res) => {
   }
   try {
     const graph = await generateBranchingSurvey(objective);
+    if (graph.nodes.filter((n: any) => n.type.startsWith('question')).length > 15) {
+      return res.status(400).json({ error: 'Survey exceeds 15 questions' });
+    }
     const survey = await createBranchingSurvey(objective, graph);
     res.json({ survey });
   } catch (error) {
@@ -40,6 +43,9 @@ router.post('/branching', async (req, res) => {
 router.put('/branching/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    if (req.body.nodes && req.body.nodes.filter((n: any) => n.type.startsWith('question')).length > 15) {
+      return res.status(400).json({ error: 'Survey exceeds 15 questions' });
+    }
     const survey = await updateBranchingSurvey(id, req.body);
     res.json({ survey });
   } catch (error) {

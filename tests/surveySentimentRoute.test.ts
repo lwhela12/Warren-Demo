@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { app } from '../server/index';
-import { prisma } from '../server/db/client';
-import { createWithQuestions } from '../server/services/surveyService';
+import { prisma } from '../server/prisma/client';
+import { createBranchingSurvey } from '../server/services/branchingSurveyService';
 
 beforeAll(async () => {
   await prisma.response.deleteMany();
-  await prisma.question.deleteMany();
+  await prisma.node.deleteMany();
+  await prisma.edge.deleteMany();
   await prisma.survey.deleteMany();
 });
 
@@ -15,11 +16,16 @@ afterAll(async () => {
 });
 
 describe('GET /api/survey/:id/sentiment', () => {
-  it('returns sentiment scores for questions', async () => {
-    const survey = await createWithQuestions('Obj', [{ text: 'Q1' }]);
-    await prisma.response.create({
-      data: { questionId: survey.questions[0].id, answer: 'great' }
-    });
+  it('returns sentiment scores for nodes', async () => {
+    const graph = {
+      nodes: [
+        { id: 'entry', type: 'message', content: { text: 'hi' } },
+        { id: 'q1', type: 'question-multiple-choice', content: { text: 'Q1' } }
+      ],
+      edges: [{ source: 'entry', target: 'q1' }]
+    };
+    const survey = await createBranchingSurvey('Obj', graph);
+    await prisma.response.create({ data: { nodeId: 'q1', answer: 'great' } });
     const res = await request(app).get(`/api/survey/${survey.id}/sentiment`);
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.questions)).toBe(true);

@@ -24,6 +24,8 @@ model Node {
   survey       Survey   @relation(fields: [surveyId], references: [id])
   type         String
   content      Json
+  sentimentScore   Float?
+  sentimentSummary String?
   outgoingEdges Edge[]  @relation("SourceNode")
   incomingEdges Edge[]  @relation("TargetNode")
   responses    Response[]

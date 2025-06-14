@@ -1,7 +1,7 @@
 import { prisma } from '../prisma/client';
 
 export interface ResponseInput {
-  questionId: string;
+  nodeId: string;
   answer: string;
 }
 
@@ -15,17 +15,18 @@ import { generateBulkStudentAnswers } from './claudeService';
 export async function seedResponsesForSurvey(surveyId: string, count = 30): Promise<number> {
   const survey = await prisma.survey.findUnique({
     where: { id: surveyId },
-    include: { questions: true }
+    include: { nodes: true }
   });
-  if (!survey || !survey.questions.length) {
+  if (!survey || !survey.nodes.length) {
     throw new Error('Survey not found or has no questions');
   }
 
   const responses: ResponseInput[] = [];
-  for (const q of survey.questions) {
-    const answers = await generateBulkStudentAnswers(q.text, count);
+  for (const n of survey.nodes) {
+    const text = (n.content as any).text || '';
+    const answers = await generateBulkStudentAnswers(text, count);
     for (let i = 0; i < count; i++) {
-      responses.push({ questionId: q.id, answer: answers[i] || '' });
+      responses.push({ nodeId: n.id, answer: answers[i] || '' });
     }
   }
   if (responses.length) {

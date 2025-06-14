@@ -17,24 +17,28 @@ export async function createBranchingSurvey(
   objective: string,
   graph: BranchingSurvey
 ) {
-  return prisma.survey.create({
-    data: {
-      objective,
-      nodes: {
-        create: graph.nodes.map((n: NodeInput) => ({
-          id: n.id,
-          type: n.type,
-          content: n.content
-        }))
-      },
-      edges: {
-        create: graph.edges.map((e: EdgeInput) => ({
-          sourceNodeId: e.source,
-          targetNodeId: e.target,
-          conditionValue: e.conditionValue
-        }))
-      }
-    },
+  const survey = await prisma.survey.create({ data: { objective } });
+
+  await prisma.node.createMany({
+    data: graph.nodes.map((n: NodeInput) => ({
+      id: n.id,
+      surveyId: survey.id,
+      type: n.type,
+      content: n.content
+    }))
+  });
+
+  await prisma.edge.createMany({
+    data: graph.edges.map((e: EdgeInput) => ({
+      surveyId: survey.id,
+      sourceNodeId: e.source,
+      targetNodeId: e.target,
+      conditionValue: e.conditionValue
+    }))
+  });
+
+  return prisma.survey.findUnique({
+    where: { id: survey.id },
     include: { nodes: true, edges: true }
   });
 }

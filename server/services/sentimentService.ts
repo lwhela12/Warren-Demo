@@ -3,9 +3,9 @@ import Sentiment from 'sentiment';
 
 const sentiment = new Sentiment();
 
-export async function calculateSentiment(questionId: string): Promise<number> {
+export async function calculateSentiment(nodeId: string): Promise<number> {
   const responses = await prisma.response.findMany({
-    where: { questionId },
+    where: { nodeId },
     select: { answer: true }
   });
   if (responses.length === 0) return 0;

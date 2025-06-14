@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { calculateSentiment } from '../server/services/sentimentService';
-import { createWithQuestions } from '../server/services/surveyService';
-import { prisma } from '../server/db/client';
+import { createBranchingSurvey } from '../server/services/branchingSurveyService';
+import { prisma } from '../server/prisma/client';
 
 beforeAll(async () => {
   await prisma.response.deleteMany();
-  await prisma.question.deleteMany();
+  await prisma.node.deleteMany();
+  await prisma.edge.deleteMany();
   await prisma.survey.deleteMany();
 });
 
@@ -15,14 +16,21 @@ afterAll(async () => {
 
 describe('calculateSentiment', () => {
   it('computes average sentiment from responses', async () => {
-    const survey = await createWithQuestions('Obj', [{ text: 'Q1' }]);
+    const graph = {
+      nodes: [
+        { id: 'entry', type: 'message', content: { text: 'hi' } },
+        { id: 'q1', type: 'question-multiple-choice', content: { text: 'Q1' } }
+      ],
+      edges: [{ source: 'entry', target: 'q1' }]
+    };
+    const survey = await createBranchingSurvey('Obj', graph);
     await prisma.response.createMany({
       data: [
-        { questionId: survey.questions[0].id, answer: 'I love it' },
-        { questionId: survey.questions[0].id, answer: 'bad experience' }
+        { nodeId: 'q1', answer: 'I love it' },
+        { nodeId: 'q1', answer: 'bad experience' }
       ]
     });
-    const score = await calculateSentiment(survey.questions[0].id);
+    const score = await calculateSentiment('q1');
     expect(typeof score).toBe('number');
   });
 });

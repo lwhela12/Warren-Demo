@@ -95,10 +95,19 @@ export async function getSurveyAnalysis(surveyId: string): Promise<string | null
 export async function getSurveySentiment(
   surveyId: string
 ): Promise<Array<{ id: string; text: string; sentimentScore: number | null }>> {
-  return prisma.question.findMany({
+  const nodes = await prisma.node.findMany({
     where: { surveyId },
-    select: { id: true, text: true, sentimentScore: true }
+    select: {
+      id: true,
+      sentimentScore: true,
+      content: true
+    }
   });
+  return nodes.map((n) => ({
+    id: n.id,
+    sentimentScore: n.sentimentScore ?? null,
+    text: (n.content as any).text || ''
+  }));
 }
 /**
  * Fetch all surveys for which analysisResultText is not null (i.e., analysis has been stored).

@@ -5,7 +5,7 @@ import {
   getActiveSurvey,
   getAnalyzedSurveys
 } from '../server/services/surveyService';
-import { prisma } from '../server/db/client';
+import { prisma } from '../server/prisma/client';
 
 beforeEach(async () => {
   // Clear tables before each test for isolation

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { seedResponsesForSurvey } from '../server/services/responseService';
 import { createWithQuestions } from '../server/services/surveyService';
-import { prisma } from '../server/db/client';
+import { prisma } from '../server/prisma/client';
 
 beforeAll(async () => {
   await prisma.response.deleteMany();
