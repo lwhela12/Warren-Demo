@@ -3,7 +3,8 @@ import { Node, Edge } from '@prisma/client';
 
 export interface BranchingGraph {
   nodes: Array<{ id: string; type: string; content: any }>;
-  edges: Array<{ source: string; target: string; conditionValue?: string }>;
+  // Edges reference node IDs as sourceNodeId/targetNodeId
+  edges: Array<{ sourceNodeId: string; targetNodeId: string; conditionValue?: string }>;
 }
 
 export async function createBranchingSurvey(
@@ -26,11 +27,18 @@ export async function createBranchingSurvey(
 
   const createdEdges: Edge[] = [];
   for (const e of graph.edges) {
+    const src = idMap[e.sourceNodeId];
+    const tgt = idMap[e.targetNodeId];
+    if (!src || !tgt) {
+      throw new Error(
+        `Invalid edge linkage: cannot map sourceNodeId '${e.sourceNodeId}' or targetNodeId '${e.targetNodeId}' to created node IDs.`
+      );
+    }
     const edge = await prisma.edge.create({
       data: {
         surveyId,
-        sourceNodeId: idMap[e.source],
-        targetNodeId: idMap[e.target],
+        sourceNodeId: src,
+        targetNodeId: tgt,
         conditionValue: e.conditionValue || null
       }
     });

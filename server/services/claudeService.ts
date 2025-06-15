@@ -243,24 +243,37 @@ export async function getSurveyAnalysisFromClaude(promptContent: string): Promis
 }
 
 export async function generateBranchingSurvey(objective: string): Promise<{ nodes: any[]; edges: any[] }> {
-  const prompt = `You are a survey designer creating a branching survey for the objective: "${objective}".
-Return ONLY a valid JSON object with "nodes" and "edges" keys.
-- Nodes must have a unique "id", a "type" ('message' or 'question-multiple-choice'), and "content" ({ "text": "...", "options": [...] }). The first node id must be "entry".
-- Edges must have a "source" id, a "target" id, and an optional "conditionValue" string which matches an option from the source question.`;
+  const prompt = `You are an expert survey designer. Build a branching survey for the objective: "${objective}".
+
+The survey MUST follow this pattern:
+1. An initial "entry" node (type: 'message') welcoming the participant.
+2. A multiple-choice question (type: 'question-multiple-choice') with 4–6 options.
+3. For each choice, generate a follow-up message node (type: 'message') that asks:
+   "You answered '<choice>'. Please explain your reasoning in your own words."
+4. The follow-up message nodes should then lead to the next multiple-choice question.
+5. Repeat steps 2–4 until you have up to 6 multiple-choice questions (and their follow-ups), then end with a "thank_you" message node.
+
+Return ONLY valid JSON with top-level keys "nodes" and "edges".
+- Each node: { id: string; type: 'message' | 'question-multiple-choice'; content: { text: string; options?: string[] } }
+- Each edge: { sourceNodeId: string; targetNodeId: string; conditionValue?: string }
+The first node id must be "entry", and the final node id must be "thank_you".`;
 
   const apiKey = process.env.CLAUDE_API_KEY;
   const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
 
   if (process.env.NODE_ENV === 'test' || !apiKey) {
+    // Stub: one MC question followed by explanation and final thank_you
     const nodes = [
-      { id: 'entry', surveyId: '', type: 'message', content: { text: 'Start', options: [] } },
-      { id: 'q1', surveyId: '', type: 'question-multiple-choice', content: { text: 'Yes or No?', options: ['yes', 'no'] } },
-      { id: 'end', surveyId: '', type: 'message', content: { text: 'Thanks', options: [] } }
+      { id: 'entry',        surveyId: '', type: 'message', content: { text: 'Start', options: [] } },
+      { id: 'q1',           surveyId: '', type: 'question-multiple-choice', content: { text: 'Yes or No?', options: ['yes', 'no'] } },
+      { id: 'q1_explain',   surveyId: '', type: 'message', content: { text: "You answered 'yes' or 'no'. Please explain your reasoning in your own words.", options: [] } },
+      { id: 'thank_you',    surveyId: '', type: 'message', content: { text: 'Thanks for your feedback!', options: [] } }
     ];
     const edges = [
-      { source: 'entry', target: 'q1' },
-      { source: 'q1', target: 'end', conditionValue: 'yes' },
-      { source: 'q1', target: 'end', conditionValue: 'no' }
+      { sourceNodeId: 'entry',        targetNodeId: 'q1' },
+      { sourceNodeId: 'q1',           targetNodeId: 'q1_explain', conditionValue: 'yes' },
+      { sourceNodeId: 'q1',           targetNodeId: 'q1_explain', conditionValue: 'no' },
+      { sourceNodeId: 'q1_explain',   targetNodeId: 'thank_you' }
     ];
     return { nodes, edges };
   }
@@ -278,8 +291,8 @@ Return ONLY a valid JSON object with "nodes" and "edges" keys.
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
-        max_tokens: 1024,
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 16000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -293,9 +306,17 @@ Return ONLY a valid JSON object with "nodes" and "edges" keys.
     const content = responseJson.content?.[0]?.text?.trim();
     if (!content) throw new Error('Claude API returned empty content');
     console.log('generateBranchingSurvey raw content:', content);
-    const parsed = JSON.parse(content);
+    // Remove Markdown code fences if present (e.g. ```json ... ```)
+    const jsonText = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    const parsed = JSON.parse(jsonText);
     console.log('generateBranchingSurvey parsed JSON:', parsed);
-    return parsed;
+    // Convert legacy 'source'/'target' keys to 'sourceNodeId'/'targetNodeId'
+    const normalizedEdges = parsed.edges.map((e: any) => ({
+      sourceNodeId: e.sourceNodeId ?? e.source,
+      targetNodeId: e.targetNodeId ?? e.target,
+      conditionValue: e.conditionValue
+    }));
+    return { nodes: parsed.nodes, edges: normalizedEdges };
   } finally {
     clearTimeout(id);
   }

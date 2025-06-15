@@ -149,9 +149,9 @@ export default function BranchingGraphView({
             fitView
             proOptions={{ hideAttribution: true }}
           >
-            <Controls />
-            <MiniMap />
-            <Background gap={16} />
+          <Controls />
+          {nodes.length > 8 && <MiniMap />}
+          <Background gap={16} />
           </ReactFlow>
         </div>
         <button
