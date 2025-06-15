@@ -10,26 +10,32 @@ export async function createBranchingSurvey(
   surveyId: string,
   graph: BranchingGraph
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
-  const nodes = await prisma.node.createMany({
-    data: graph.nodes.map((n) => ({
-      id: n.id,
-      surveyId,
-      type: n.type,
-      content: n.content
-    }))
-  });
+  const idMap: Record<string, string> = {};
+  const createdNodes: Node[] = [];
+  for (const n of graph.nodes) {
+    const node = await prisma.node.create({
+      data: {
+        surveyId,
+        type: n.type,
+        content: n.content
+      }
+    });
+    idMap[n.id] = node.id;
+    createdNodes.push(node);
+  }
 
-  const edges = await prisma.edge.createMany({
-    data: graph.edges.map((e) => ({
-      surveyId,
-      sourceNodeId: e.source,
-      targetNodeId: e.target,
-      conditionValue: e.conditionValue || null
-    }))
-  });
-
-  const createdNodes = await prisma.node.findMany({ where: { surveyId } });
-  const createdEdges = await prisma.edge.findMany({ where: { surveyId } });
+  const createdEdges: Edge[] = [];
+  for (const e of graph.edges) {
+    const edge = await prisma.edge.create({
+      data: {
+        surveyId,
+        sourceNodeId: idMap[e.source],
+        targetNodeId: idMap[e.target],
+        conditionValue: e.conditionValue || null
+      }
+    });
+    createdEdges.push(edge);
+  }
 
   return { nodes: createdNodes, edges: createdEdges };
 }
@@ -46,7 +52,9 @@ export async function updateBranchingSurvey(
 export async function getEntryNode(
   surveyId: string
 ): Promise<Node | null> {
-  return prisma.node.findFirst({ where: { id: 'entry', surveyId } });
+  return prisma.node.findFirst({
+    where: { surveyId, incomingEdges: { none: {} } }
+  });
 }
 
 export async function getNextNode(

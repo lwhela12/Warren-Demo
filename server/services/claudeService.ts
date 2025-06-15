@@ -292,7 +292,10 @@ Return ONLY a valid JSON object with "nodes" and "edges" keys.
     const responseJson = await res.json();
     const content = responseJson.content?.[0]?.text?.trim();
     if (!content) throw new Error('Claude API returned empty content');
-    return JSON.parse(content);
+    console.log('generateBranchingSurvey raw content:', content);
+    const parsed = JSON.parse(content);
+    console.log('generateBranchingSurvey parsed JSON:', parsed);
+    return parsed;
   } finally {
     clearTimeout(id);
   }

@@ -13,11 +13,9 @@ const router = Router();
 router.post('/', async (req, res) => {
   const { objective } = req.body;
   if (!objective) return res.status(400).json({ error: 'objective required' });
-  const { nodes, edges } = await generateBranchingSurvey(objective);
-
+  const graph = await generateBranchingSurvey(objective);
   const survey = await prisma.survey.create({ data: { objective } });
-  await createBranchingSurvey(survey.id, { nodes, edges });
-
+  const { nodes, edges } = await createBranchingSurvey(survey.id, graph);
   res.json({ surveyId: survey.id, nodes, edges });
 });
 
