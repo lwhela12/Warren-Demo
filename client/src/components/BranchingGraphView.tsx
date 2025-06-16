@@ -5,25 +5,30 @@ import ReactFlow, {
   Background,
   useNodesState,
   useEdgesState,
+  MarkerType,
   Handle,
   Position,
   NodeProps
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { colors } from '../theme';
+import MethodologyModal from './MethodologyModal';
+import ChatOverlay from './ChatOverlay';
 
 // Node data passed into the custom node component
 interface NodeData {
   label: string;
   type: string;
   options?: string[];
+  rationale?: string;
   onTextChange: (id: string, text: string) => void;
   onOptionsChange: (id: string, options: string) => void;
+  onShowRationale: (rationale: string) => void;
 }
 
 // Custom renderer for message/question nodes
 const CustomNode = ({ id, data }: NodeProps<NodeData>) => (
-  <div style={{ padding: 15, border: '1px solid #ddd', borderRadius: 8, background: 'white', width: 250 }}>
+  <div style={{ position: 'relative', padding: 15, border: '1px solid #ddd', borderRadius: 8, background: 'white', width: 250 }}>
     <Handle type="target" position={Position.Top} />
     <div style={{ fontWeight: 'bold', marginBottom: 10, color: colors.primaryText }}>
       {data.type === 'message' ? 'Message' : 'Question'}
@@ -43,6 +48,23 @@ const CustomNode = ({ id, data }: NodeProps<NodeData>) => (
         rows={2}
       />
     )}
+    {/* info‑icon */}
+    <button
+      title="View Rationale"
+      onClick={() => data.onShowRationale(data.rationale ?? 'No rationale available.')}
+      style={{
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        border: 'none',
+        background: 'none',
+        color: colors.primaryDarkBlue,
+        fontSize: 16,
+        cursor: 'pointer'
+      }}
+    >
+      ⓘ
+    </button>
     <Handle type="source" position={Position.Bottom} />
   </div>
 );
@@ -75,6 +97,9 @@ export default function BranchingGraphView({
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [saving, setSaving] = useState(false);
+  const [showRationaleModal, setShowRationaleModal] = useState(false);
+  const [rationaleContent, setRationaleContent] = useState('');
+  const [showChat, setShowChat] = useState(false);
 
   const handleTextChange = (id: string, text: string) =>
     setNodes((nds) =>
@@ -90,23 +115,109 @@ export default function BranchingGraphView({
       )
     );
 
+  const handleShowRationale = (rationale: string) => {
+    setRationaleContent(rationale);
+    setShowRationaleModal(true);
+  };
+
   // Register custom node type
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
   // Initialize nodes and edges when props change
   useEffect(() => {
-    const formattedNodes = initialNodes.map((n, idx) => ({
-      id: n.id,
-      type: 'custom',
-      position: { x: 250, y: idx * 200 },
-      data: {
-        label: n.content.text,
-        type: n.type,
-        options: n.content.options,
-        onTextChange: handleTextChange,
-        onOptionsChange: handleOptionsChange
-      }
-    }));
+    // Layout: all MC questions in a row; their explanation messages stack below each question
+    const nodeMap = Object.fromEntries(initialNodes.map((n) => [n.id, n]));
+    const edgesBySource = initialEdges.reduce((map, e) => {
+      (map[e.sourceNodeId] ||= []).push(e);
+      return map;
+    }, {} as Record<string, BranchEdge[]>);
+
+    const questions = initialNodes.filter((n) => n.type === 'question-multiple-choice');
+    // Spacing constants for a more spread-out layout
+    const questionY = 150;
+    const questionXStep = 700;
+    const baseX = 100;
+    const childXOffset = 350;   // horizontal offset for explanation nodes
+    const childYStep = 240;     // vertical spacing between explanation nodes
+
+    // Build row of questions flanked by entry and thank_you, with explanations stacked to the right
+    const formattedNodes: any[] = [];
+
+    // Entry node (far left)
+    if (nodeMap['entry']) {
+      formattedNodes.push({
+        id: 'entry',
+        type: 'custom',
+        position: { x: baseX - questionXStep, y: questionY },
+        data: {
+          label: nodeMap['entry'].content.text,
+          type: 'message',
+          options: [],
+          rationale: (nodeMap['entry'].content as any).rationale,
+          onTextChange: handleTextChange,
+          onOptionsChange: handleOptionsChange,
+          onShowRationale: handleShowRationale
+        }
+      });
+    }
+
+    questions.forEach((qn, qIdx) => {
+      const qx = baseX + qIdx * questionXStep;
+      // question node
+      formattedNodes.push({
+        id: qn.id,
+        type: 'custom',
+        position: { x: qx, y: questionY },
+        data: {
+          label: qn.content.text,
+          type: qn.type,
+          options: qn.content.options,
+          rationale: (qn.content as any).rationale,
+          onTextChange: handleTextChange,
+          onOptionsChange: handleOptionsChange,
+          onShowRationale: handleShowRationale
+        }
+      });
+      // stacked explanation nodes to the right
+      const children = edgesBySource[qn.id] || [];
+      children.forEach((edge, cIdx) => {
+        const mn = nodeMap[edge.targetNodeId];
+        if (mn) {
+          formattedNodes.push({
+            id: mn.id,
+            type: 'custom',
+            position: { x: qx + childXOffset, y: questionY + cIdx * childYStep },
+            data: {
+              label: mn.content.text,
+              type: mn.type,
+              options: mn.content.options,
+              rationale: (mn.content as any).rationale,
+              onTextChange: handleTextChange,
+              onOptionsChange: handleOptionsChange,
+              onShowRationale: handleShowRationale
+            }
+          });
+        }
+      });
+    });
+
+    // thank_you node (far right)
+    if (nodeMap['thank_you']) {
+      formattedNodes.push({
+        id: 'thank_you',
+        type: 'custom',
+        position: { x: baseX + questions.length * questionXStep, y: questionY },
+        data: {
+          label: nodeMap['thank_you'].content.text,
+          type: 'message',
+          options: [],
+          rationale: (nodeMap['thank_you'].content as any).rationale,
+          onTextChange: handleTextChange,
+          onOptionsChange: handleOptionsChange,
+          onShowRationale: handleShowRationale
+        }
+      });
+    }
 
     const formattedEdges = initialEdges.map((e) => ({
       id: `e-${e.sourceNodeId}-${e.targetNodeId}-${e.conditionValue || ''}`,
@@ -114,7 +225,7 @@ export default function BranchingGraphView({
       target: e.targetNodeId,
       label: e.conditionValue,
       type: 'smoothstep',
-      markerEnd: { type: 'arrowclosed' }
+      markerEnd: { type: MarkerType.ArrowClosed }
     }));
 
     setNodes(formattedNodes);
@@ -136,8 +247,9 @@ export default function BranchingGraphView({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row' }}>
-      <div style={{ flex: 1 }}>
+    <>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <div style={{ flex: 1 }}>
         <h2 style={{ color: colors.primaryDarkBlue }}>Survey Flow</h2>
         <div style={{ height: '70vh', width: '100%', border: `1px solid ${colors.border}`, borderRadius: 8 }}>
           <ReactFlow
@@ -162,7 +274,20 @@ export default function BranchingGraphView({
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
+        <button
+          className="login-button"
+          onClick={() => setShowChat(true)}
+          style={{ marginTop: '1rem', marginLeft: '1rem' }}
+        >
+          Demo Survey
+        </button>
+        </div>
       </div>
-    </div>
+      <MethodologyModal open={showRationaleModal} onClose={() => setShowRationaleModal(false)}>
+        <h2>Question Rationale</h2>
+        <p>{rationaleContent}</p>
+      </MethodologyModal>
+      {showChat && <ChatOverlay surveyId={surveyId} onClose={() => setShowChat(false)} />}
+    </>
   );
 }

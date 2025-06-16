@@ -243,7 +243,10 @@ export async function getSurveyAnalysisFromClaude(promptContent: string): Promis
 }
 
 export async function generateBranchingSurvey(objective: string): Promise<{ nodes: any[]; edges: any[] }> {
-  const prompt = `You are an expert survey designer. Build a branching survey for the objective: "${objective}".
+  const prompt = `You are an expert survey designer. Use the following Survey Methodology Framework to create a branching survey:
+${methodologyFramework}
+
+Build a branching survey for the objective: "${objective}".
 
 The survey MUST follow this pattern:
 1. An initial "entry" node (type: 'message') welcoming the participant.
@@ -254,7 +257,7 @@ The survey MUST follow this pattern:
 5. Repeat steps 2–4 until you have up to 6 multiple-choice questions (and their follow-ups), then end with a "thank_you" message node.
 
 Return ONLY valid JSON with top-level keys "nodes" and "edges".
-- Each node: { id: string; type: 'message' | 'question-multiple-choice'; content: { text: string; options?: string[] } }
+- Each node: { id: string; type: 'message' | 'question-multiple-choice'; content: { text: string; options?: string[]; rationale?: string } }
 - Each edge: { sourceNodeId: string; targetNodeId: string; conditionValue?: string }
 The first node id must be "entry", and the final node id must be "thank_you".`;
 
@@ -264,10 +267,10 @@ The first node id must be "entry", and the final node id must be "thank_you".`;
   if (process.env.NODE_ENV === 'test' || !apiKey) {
     // Stub: one MC question followed by explanation and final thank_you
     const nodes = [
-      { id: 'entry',        surveyId: '', type: 'message', content: { text: 'Start', options: [] } },
-      { id: 'q1',           surveyId: '', type: 'question-multiple-choice', content: { text: 'Yes or No?', options: ['yes', 'no'] } },
-      { id: 'q1_explain',   surveyId: '', type: 'message', content: { text: "You answered 'yes' or 'no'. Please explain your reasoning in your own words.", options: [] } },
-      { id: 'thank_you',    surveyId: '', type: 'message', content: { text: 'Thanks for your feedback!', options: [] } }
+      { id: 'entry',        surveyId: '', type: 'message', content: { text: 'Start', options: [], rationale: 'Entry node to welcome the participant.' } },
+      { id: 'q1',           surveyId: '', type: 'question-multiple-choice', content: { text: 'Yes or No?', options: ['yes', 'no'], rationale: 'Initial binary question to kick off the flow.' } },
+      { id: 'q1_explain',   surveyId: '', type: 'message', content: { text: "You answered 'yes' or 'no'. Please explain your reasoning in your own words.", options: [], rationale: 'Prompt for open-ended explanation based on the previous choice.' } },
+      { id: 'thank_you',    surveyId: '', type: 'message', content: { text: 'Thanks for your feedback!', options: [], rationale: 'Terminal node to conclude the survey.' } }
     ];
     const edges = [
       { sourceNodeId: 'entry',        targetNodeId: 'q1' },

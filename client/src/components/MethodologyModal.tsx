@@ -7,9 +7,11 @@ import { colors } from '../theme';
 interface MethodologyModalProps {
   open: boolean;
   onClose: () => void;
+  /** If provided, render this content instead of loading methodology document */
+  children?: React.ReactNode;
 }
 
-export default function MethodologyModal({ open, onClose }: MethodologyModalProps) {
+export default function MethodologyModal({ open, onClose, children }: MethodologyModalProps) {
   const [content, setContent] = useState<string>('');
 
   useEffect(() => {
@@ -60,9 +62,13 @@ export default function MethodologyModal({ open, onClose }: MethodologyModalProp
           ×
         </button>
         <div style={{ fontFamily: 'inherit', color: colors.primaryText }}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {content}
-          </ReactMarkdown>
+          {children ? (
+            children
+          ) : (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {content}
+            </ReactMarkdown>
+          )}
         </div>
       </div>
     </div>

@@ -24,6 +24,18 @@ This document tracks the rollout of branching survey functionality. It lists the
 
 **Status:** _complete_
 
----
-*Last updated: 2025-06-14
+## Phase 4 – UI Enhancements: Rationale & Chat Overlay
+## Phase 4 – UI Enhancements: Rationale, Chat Demo & Layout
+- Embedded the Survey Methodology Framework and rationale field into the generateBranchingSurvey prompt and stub.
+- Simplified info icon to an inline brand‑blue “ⓘ” in each node header.
+- Questions laid out in a horizontal row; explanation messages stacked to the right of their question.
+- Spacing constants (baseX, questionXStep, childXOffset, childYStep) tuned for generous gaps.
+- Conditional MiniMap display when node count exceeds threshold.
+- ChatOverlay demo with styled chat bubbles (grey for bot, brand‑blue for user) and brand‑blue MC/Submit buttons.
+- Entry node flanking the left, thank_you node flanking the right for complete flow.
 
+**Status:** _complete_
+
+---
+---
+*Last updated: 2025-06-17*
