@@ -148,7 +148,7 @@ export default function BranchingGraphView({
       formattedNodes.push({
         id: 'entry',
         type: 'custom',
-        position: { x: baseX - questionXStep, y: questionY },
+        position: { x: baseX, y: questionY },
         data: {
           label: nodeMap['entry'].content.text,
           type: 'message',
@@ -206,7 +206,7 @@ export default function BranchingGraphView({
       formattedNodes.push({
         id: 'thank_you',
         type: 'custom',
-        position: { x: baseX + questions.length * questionXStep, y: questionY },
+        position: { x: baseX + (questions.length + 1) * questionXStep, y: questionY },
         data: {
           label: nodeMap['thank_you'].content.text,
           type: 'message',
@@ -240,7 +240,14 @@ export default function BranchingGraphView({
         type: n.data.type,
         content: { text: n.data.label, options: n.data.options }
       }));
-      await onSave(updatedNodes, initialEdges);
+      // Filter out any edges pointing to nodes that no longer exist
+      const validEdges = edges.filter(
+        (e) => updatedNodes.some((n) => n.id === e.source) && updatedNodes.some((n) => n.id === e.target)
+      );
+      if (validEdges.length < edges.length) {
+        console.warn('Dropping invalid edges before save');
+      }
+      await onSave(updatedNodes, validEdges);
     } finally {
       setSaving(false);
     }

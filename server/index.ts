@@ -16,8 +16,9 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/claude', claudeRoutes);
-app.use('/api/survey', surveyRoutes);
+// Mount branching before the generic survey routes so /survey/branching is not swallowed by /survey
 app.use('/api/survey/branching', branchingSurveyRoutes);
+app.use('/api/survey', surveyRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/docs', docsRoutes);
 

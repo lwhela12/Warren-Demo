@@ -168,20 +168,7 @@ export default function Wizard() {
   }
 
   return (
-    <div
-      className="card wizard-main-card"
-      style={{
-        maxWidth: 580,
-        margin: "0 auto",
-        marginTop: "3vw",
-        marginBottom: "3vw",
-        boxShadow: "0 6px 32px rgba(37,74,138,0.08)",
-        padding: "2.2rem 2.5rem 2.2rem 2.5rem",
-        borderRadius: 24,
-        background: colors.offWhite,
-        border: "1.5px solid #e7e7ef",
-      }}
-    >
+    <div className="card wizard-main-card">
       <h1 style={{
         marginTop: 0,
         marginBottom: 18,
@@ -208,12 +195,19 @@ export default function Wizard() {
           nodes={nodes}
           edges={edges}
           onSave={async (n, e) => {
+            // Normalize edges before persisting
+            const branchEdges = e.map((edge) => ({
+              sourceNodeId: edge.source,
+              targetNodeId: edge.target,
+              conditionValue: edge.label || undefined
+            }));
             await fetch(`${API_URL}/api/survey/branching/${surveyId}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ nodes: n, edges: e })
+              body: JSON.stringify({ nodes: n, edges: branchEdges })
             });
             setNodes(n);
+            setEdges(branchEdges);
           }}
         />
       )}

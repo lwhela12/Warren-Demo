@@ -30,9 +30,10 @@ export async function createBranchingSurvey(
     const src = idMap[e.sourceNodeId];
     const tgt = idMap[e.targetNodeId];
     if (!src || !tgt) {
-      throw new Error(
-        `Invalid edge linkage: cannot map sourceNodeId '${e.sourceNodeId}' or targetNodeId '${e.targetNodeId}' to created node IDs.`
+      console.warn(
+        `Skipping invalid edge linkage: ${e.sourceNodeId} → ${e.targetNodeId}`
       );
+      continue;
     }
     const edge = await prisma.edge.create({
       data: {
@@ -74,7 +75,9 @@ export async function getNextNode(
     where: { surveyId, sourceNodeId: currentNodeId },
     orderBy: { id: 'asc' }
   });
-  const match = edges.find((e) => !e.conditionValue || e.conditionValue === answer);
+  // Prefer a matching conditional branch first, then fall back to an unconditional default edge
+  const match = edges.find((e) => e.conditionValue === answer)
+    || edges.find((e) => !e.conditionValue);
   if (!match) return null;
   return prisma.node.findFirst({ where: { id: match.targetNodeId, surveyId } });
 }

@@ -6,6 +6,18 @@ html, body {
   color: #032E46;
   height: 100%;
 }
+
+/* Wizard main card responsive style */
+.wizard-main-card {
+  width: 90vw;
+  max-width: 1200px;
+  margin: 3vw auto;
+  box-shadow: 0 6px 32px rgba(37, 74, 138, 0.08);
+  padding: 2.2rem 2.5rem;
+  border-radius: 24px;
+  background: #F8F7F4;
+  border: 1.5px solid #e7e7ef;
+}
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .dashboard-layout {
@@ -248,6 +260,18 @@ button:disabled {
   padding: 0;
 }
 /* Dashboard Hero Title */
+/* Wizard main card responsive style */
+.wizard-main-card {
+  width: 90vw;
+  max-width: 1200px;
+  margin: 3vw auto;
+  box-shadow: 0 6px 32px rgba(37, 74, 138, 0.08);
+  padding: 2.2rem 2.5rem;
+  border-radius: 24px;
+  background: #F8F7F4;
+  border: 1.5px solid #e7e7ef;
+}
+
 .dashboard-hero {
   color: #032E46;
   font-family: 'Lust Display', serif;
