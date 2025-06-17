@@ -39,3 +39,52 @@ export async function analyzeSurveyResponses(surveyId: string): Promise<string> 
   await storeSurveyAnalysis(surveyId, analysisText);
   return analysisText;
 }
+
+/**
+ * Formats a branching survey's questions and responses for AI analysis.
+ * It groups all responses by their corresponding question node.
+ */
+export async function formatBranchingSurveyForAnalysis(surveyId: string): Promise<string> {
+  const survey = await prisma.survey.findUnique({
+    where: { id: surveyId },
+    include: {
+      nodes: {
+        where: { type: 'question-multiple-choice' },
+        include: { responses: true }
+      }
+    }
+  });
+
+  if (!survey) throw new Error(`Survey ${surveyId} not found`);
+
+  let content = `Branching Survey Objective: ${survey.objective}\n\n`;
+
+  survey.nodes.forEach((node, idx) => {
+    if (node.responses.length > 0) {
+      content += `Question ${idx + 1}: ${(node.content as any).text}\n`;
+      content += `Student Responses to Question ${idx + 1}:\n[\n`;
+      node.responses.forEach((r, i) => {
+        const answer = r.answer.replace(/"/g, '\\"');
+        content += `  "${answer}"${i < node.responses.length - 1 ? ',' : ''}\n`;
+      });
+      content += `]\n\n`;
+    }
+  });
+
+  return content;
+}
+
+/**
+ * Triggers the AI analysis for a branching survey.
+ */
+export async function analyzeBranchingSurvey(surveyId: string): Promise<string> {
+  const surveyContent = await formatBranchingSurveyForAnalysis(surveyId);
+  const instructions =
+    'You are an expert qualitative data analyst. Analyze the following branching survey responses. For each question, provide themes, overall sentiment, representative quotes, and key takeaways. After all questions, summarize the entire survey. Return Markdown formatted text.';
+  const prompt = `${instructions}\n\n${surveyContent}`;
+  const analysisText = await getSurveyAnalysisFromClaude(prompt);
+
+  await storeSurveyAnalysis(surveyId, analysisText);
+
+  return analysisText;
+}
