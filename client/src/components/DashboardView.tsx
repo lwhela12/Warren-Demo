@@ -4,9 +4,10 @@ import { colors } from "../theme";
 interface Props {
   onStartSurvey: () => void;
   onViewResults: (surveyId?: string) => void;
+  onGoToExisting: () => void;
 }
 
-export default function DashboardView({ onStartSurvey, onViewResults }: Props) {
+export default function DashboardView({ onStartSurvey, onViewResults, onGoToExisting }: Props) {
   return (
     <div>
       <div className="dashboard-header">
@@ -33,6 +34,9 @@ export default function DashboardView({ onStartSurvey, onViewResults }: Props) {
       <h2 className="dashboard-hero">Dig Your Burrow!</h2>
       <div className="action-card" onClick={onStartSurvey}>
         Dig New Burrow
+      </div>
+      <div className="action-card" onClick={onGoToExisting}>
+        Existing Surveys
       </div>
       <div className="action-card" onClick={() => onViewResults()}>
         The Den (Survey Results)

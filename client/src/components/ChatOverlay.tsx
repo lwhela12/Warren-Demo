@@ -37,12 +37,13 @@ export default function ChatOverlay({ surveyId, onClose }: ChatOverlayProps) {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
   }, [messages]);
 
-  // After rendering an entry message, auto-advance to the first MC question
+  // After the entry message is displayed, automatically advance
   useEffect(() => {
-    if (currentNode?.type === 'message' && currentNode.content.options?.length === 0) {
-      if (currentNode.id === 'entry') {
+    if (currentNode?.id === 'entry') {
+      const timer = setTimeout(() => {
         handleOptionClick('');
-      }
+      }, 1500);
+      return () => clearTimeout(timer);
     }
   }, [currentNode]);
 

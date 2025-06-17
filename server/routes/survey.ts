@@ -33,6 +33,21 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Fetch all surveys ordered by creation date (new endpoint)
+router.get('/', async (_req, res) => {
+  try {
+    const surveys = await prisma.survey.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    res.json({ surveys });
+  } catch (error) {
+    console.error('Error fetching surveys:', error);
+    res.status(500).json({ error: 'Failed to fetch surveys' });
+  }
+});
+
 router.patch('/:id/question/:qid', async (req, res) => {
   const { qid } = req.params;
   const { text } = req.body;
