@@ -5,6 +5,8 @@ import DashboardView from "./components/DashboardView";
 import StudentPlaceholder from "./components/StudentPlaceholder";
 import ResultsView from "./components/ResultsView";
 import DenHome from "./components/DenHome";
+import ExistingSurveysView from "./components/ExistingSurveysView";
+import ChatOverlay from "./components/ChatOverlay";
 
 import Login from "./Login";
 import "./index.css";
@@ -38,6 +40,7 @@ export default function App() {
   const { token, role } = useAuthInfo();
   const [page, setPage] = useState("dashboard");
   const [activeSurveyIdForResults, setActiveSurveyIdForResults] = useState<string | null>(null);
+  const [demoSurveyId, setDemoSurveyId] = useState<string | null>(null);
 
   const handleNavigate = (p: string, surveyId?: string) => {
     if (p === "results") {
@@ -71,6 +74,10 @@ export default function App() {
     setActiveSurveyIdForResults(surveyId);
   };
 
+  const handleSelectExistingSurvey = (id: string) => {
+    setDemoSurveyId(id);
+  };
+
   return (
     <div className="dashboard-layout">
       <Sidebar active={page} onNavigate={handleNavigate} onLogout={handleLogout} />
@@ -86,10 +93,18 @@ export default function App() {
           )
         ) : page === 'builder' ? (
           <Wizard />
+        ) : page === 'existing' ? (
+          <>
+            <ExistingSurveysView onSelectSurvey={handleSelectExistingSurvey} />
+            {demoSurveyId && (
+              <ChatOverlay surveyId={demoSurveyId} onClose={() => setDemoSurveyId(null)} />
+            )}
+          </>
         ) : (
           <DashboardView
             onStartSurvey={() => setPage('builder')}
             onViewResults={(surveyId?: string) => handleNavigate('results', surveyId)}
+            onGoToExisting={() => setPage('existing')}
           />
         )}
       </div>
