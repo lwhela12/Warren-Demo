@@ -11,6 +11,7 @@
     "tunnel": "bash ./scripts/tunnel.sh",
     "demo:seed": "npm --prefix server run demo:seed",
     "db:seed": "npm --prefix server run db:seed",
+    "db:seed:branching": "ts-node server/db/branchingResponseSeed.ts",
     "lint": "eslint \"**/*.{ts,tsx}\"",
     "test": "vitest"
   },
