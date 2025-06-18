@@ -3,6 +3,8 @@ import { API_URL } from '../config';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ResultsCharts from './ResultsCharts';
+import BranchingResultsCharts from './BranchingResultsCharts';
+import BranchingRawData from './BranchingRawData';
 
 interface SurveyAnalysis {
   analysis: string;
@@ -20,7 +22,8 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentSurveyId, setCurrentSurveyId] = useState<string | null>(propSurveyId);
-  const [mode, setMode] = useState<'markdown' | 'charts'>('markdown');
+  const [view, setView] = useState<'analysis' | 'charts' | 'data'>('analysis');
+  const [isBranching, setIsBranching] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchActiveSurvey() {
@@ -52,6 +55,14 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
       if (error) setLoading(false);
       return;
     }
+
+    // determine if survey has branching nodes
+    fetch(`${API_URL}/api/survey/branching/${currentSurveyId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setIsBranching(!!data && Array.isArray(data.nodes) && data.nodes.length > 0);
+      })
+      .catch(() => setIsBranching(false));
 
     setLoading(true);
     setError(null);
@@ -100,25 +111,44 @@ export default function ResultsView({ surveyId: propSurveyId, onGoBackToList }: 
       <div style={{ marginBottom: '1rem' }}>
         <button
           className="login-button"
-          onClick={() => setMode('markdown')}
-          disabled={mode === 'markdown'}
+          onClick={() => setView('analysis')}
+          disabled={view === 'analysis'}
         >
           Report
         </button>
         <button
           className="login-button"
-          onClick={() => setMode('charts')}
-          disabled={mode === 'charts'}
+          onClick={() => setView('charts')}
+          disabled={view === 'charts'}
           style={{ marginLeft: '0.5rem' }}
         >
           Charts
         </button>
+        {isBranching && (
+          <button
+            className="login-button"
+            onClick={() => setView('data')}
+            disabled={view === 'data'}
+            style={{ marginLeft: '0.5rem' }}
+          >
+            Raw Data
+          </button>
+        )}
       </div>
       <div style={{ color: '#333', lineHeight: 1.6 }}>
-        {mode === 'markdown' ? (
+        {view === 'analysis' && (
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysis}</ReactMarkdown>
-        ) : (
-          currentSurveyId && <ResultsCharts surveyId={currentSurveyId} />
+        )}
+        {view === 'charts' && (
+          currentSurveyId &&
+          (isBranching ? (
+            <BranchingResultsCharts surveyId={currentSurveyId} />
+          ) : (
+            <ResultsCharts surveyId={currentSurveyId} />
+          ))
+        )}
+        {view === 'data' && currentSurveyId && (
+          <BranchingRawData surveyId={currentSurveyId} />
         )}
       </div>
     </div>

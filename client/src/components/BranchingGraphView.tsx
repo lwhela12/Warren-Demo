@@ -14,6 +14,7 @@ import 'reactflow/dist/style.css';
 import { colors } from '../theme';
 import MethodologyModal from './MethodologyModal';
 import ChatOverlay from './ChatOverlay';
+import { API_URL } from '../config';
 
 // Node data passed into the custom node component
 interface NodeData {
@@ -118,6 +119,20 @@ export default function BranchingGraphView({
   const handleShowRationale = (rationale: string) => {
     setRationaleContent(rationale);
     setShowRationaleModal(true);
+  };
+
+  const handleSeedAndAnalyze = async () => {
+    try {
+      const res = await fetch(
+        `${API_URL}/api/survey/branching/${surveyId}/seed-and-analyze`,
+        { method: 'POST' }
+      );
+      if (!res.ok) throw new Error('Failed');
+      alert('Survey seeded and analyzed. Check "The Den" for results.');
+    } catch (err) {
+      console.error(err);
+      alert('Error seeding survey');
+    }
   };
 
   // Register custom node type
@@ -290,6 +305,7 @@ export default function BranchingGraphView({
         </button>
         <button
           className="login-button"
+          onClick={handleSeedAndAnalyze}
           style={{
             marginTop: '1rem',
             marginLeft: '1rem'

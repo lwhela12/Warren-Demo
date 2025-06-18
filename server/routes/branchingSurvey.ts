@@ -3,10 +3,13 @@ import {
   createBranchingSurvey,
   updateBranchingSurvey,
   getEntryNode,
-  getNextNode
+  getNextNode,
+  seedBranchingSurveyResponses,
+  getBranchingSurveyResults
 } from '../services/branchingSurveyService';
 import { generateBranchingSurvey } from '../services/claudeService';
 import { prisma } from '../prisma/client';
+import { analyzeBranchingSurvey } from '../services/analysisService';
 
 const router = Router();
 
@@ -71,6 +74,28 @@ router.post('/:id/next', async (req, res) => {
   const node = await getNextNode(req.params.id, currentNodeId, answer);
   if (!node) return res.status(404).json({ error: 'next node not found' });
   res.json({ node });
+});
+
+router.post('/:id/seed-and-analyze', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await seedBranchingSurveyResponses(id, 25);
+    const analysis = await analyzeBranchingSurvey(id);
+    res.json({ analysis });
+  } catch (error) {
+    console.error('Error seeding and analyzing branching survey:', error);
+    res.status(500).json({ error: 'Failed to seed and analyze survey' });
+  }
+});
+
+router.get('/:id/results', async (req, res) => {
+  try {
+    const results = await getBranchingSurveyResults(req.params.id);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching branching survey results:', error);
+    res.status(500).json({ error: 'Failed to fetch results' });
+  }
 });
 
 export default router;

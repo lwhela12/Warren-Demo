@@ -81,3 +81,91 @@ export async function getNextNode(
   if (!match) return null;
   return prisma.node.findFirst({ where: { id: match.targetNodeId, surveyId } });
 }
+
+/** Simulate a single student's path through the survey */
+async function simulateStudent(
+  surveyId: string,
+  entryNode: Node
+): Promise<Array<{ nodeId: string; answer: string }>> {
+  let currentNode: Node | null = entryNode;
+  const responses: { nodeId: string; answer: string }[] = [];
+
+  while (currentNode) {
+    if (currentNode.type === 'question-multiple-choice') {
+      const options = (currentNode.content as any)?.options as string[] | undefined;
+      if (!options || options.length === 0) break;
+      const answer = options[Math.floor(Math.random() * options.length)];
+      responses.push({ nodeId: currentNode.id, answer });
+      currentNode = await getNextNode(surveyId, currentNode.id, answer);
+    } else {
+      currentNode = await getNextNode(surveyId, currentNode.id, '');
+    }
+  }
+
+  return responses;
+}
+
+/**
+ * Seed branching survey responses for a demo by simulating multiple students.
+ */
+export async function seedBranchingSurveyResponses(
+  surveyId: string,
+  count = 25
+): Promise<number> {
+  const entry = await getEntryNode(surveyId);
+  if (!entry) throw new Error('Entry node not found');
+
+  let all: { nodeId: string; answer: string }[] = [];
+  for (let i = 0; i < count; i++) {
+    const student = await simulateStudent(surveyId, entry);
+    all.push(...student);
+  }
+
+  if (all.length) {
+    await prisma.response.createMany({ data: all });
+  }
+  return all.length;
+}
+
+export interface BranchingSurveyResults {
+  questions: Array<{
+    nodeId: string;
+    text: string;
+    options: string[];
+    aggregation: Record<string, number>;
+    rawResponses: Array<{ answer: string }>;
+  }>;
+}
+
+/**
+ * Retrieve aggregated and raw results for a branching survey.
+ */
+export async function getBranchingSurveyResults(
+  surveyId: string
+): Promise<BranchingSurveyResults> {
+  const nodes = await prisma.node.findMany({
+    where: { surveyId, type: 'question-multiple-choice' },
+    include: { responses: true }
+  });
+
+  const questions = nodes.map((n) => {
+    const text = (n.content as any)?.text ?? '';
+    const options: string[] = (n.content as any)?.options ?? [];
+    const aggregation: Record<string, number> = {};
+    options.forEach((o) => {
+      aggregation[o] = 0;
+    });
+    n.responses.forEach((r) => {
+      aggregation[r.answer] = (aggregation[r.answer] || 0) + 1;
+    });
+    return {
+      nodeId: n.id,
+      text,
+      options,
+      aggregation,
+      rawResponses: n.responses.map((r) => ({ answer: r.answer }))
+    };
+  });
+
+  return { questions };
+}
