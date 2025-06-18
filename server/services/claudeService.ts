@@ -68,7 +68,7 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -122,7 +122,7 @@ export async function regenerateQuestion(
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -165,7 +165,7 @@ export async function generateBulkStudentAnswers(questionText: string, count = 3
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -221,7 +221,7 @@ export async function getSurveyAnalysisFromClaude(promptContent: string): Promis
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 2048,
         messages: [{ role: 'user', content: promptContent }]
       })
