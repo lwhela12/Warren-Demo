@@ -61,7 +61,7 @@ export default function WizardStepObjective({ initialObjective = "", loading, er
         </div>
         <div className="field-group">
           <label htmlFor="class" className="field-label">Class</label>
-          <select id="class" className="field-input" disabled={loading}>
+          <select id="class" className="field-input class-field" disabled={loading}>
             {classes.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}

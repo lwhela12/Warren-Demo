@@ -285,20 +285,26 @@ button:disabled {
   margin: 0 auto;
 }
 .objective-instructions {
-  color: #032E46;
-  font-family: 'Acumin Pro', sans-serif;
-  font-size: 24px;
-  font-weight: 300;
-  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24px;
+  text-align: center;
 }
+
 .wizard-fields-row {
   display: flex;
-  gap: 32px;
+  gap: 24px;
   margin-bottom: 24px;
+  align-items: center;
 }
+
 .field-group {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  /* Force consistent baseline for all field groups */
+  vertical-align: top;
 }
 .field-label {
   color: #032E46;
@@ -307,7 +313,10 @@ button:disabled {
   font-weight: 300;
   margin-bottom: 8px;
 }
-.field-input {
+
+/* Reset all field inputs to have consistent baseline */
+.field-input,
+.class-field {
   background-color: #DAEDF0;
   border-radius: 30px;
   border: none;
@@ -315,15 +324,55 @@ button:disabled {
   font-family: 'Acumin Pro', sans-serif;
   font-size: 16px;
   box-sizing: border-box;
-}
-.date-field {
-  width: 209px;
   height: 54px;
+  /* Force consistent vertical alignment */
+  vertical-align: top;
+  margin: 0;
+  display: inline-block;
 }
+
 .title-field {
-  width: 360px;
+  width: 320px; /* Increased from 360px */
   height: 54px;
 }
+
+/* Specific adjustments for select */
+.class-field {
+  width: 280px; /* Decreased from 360px */
+  height: 54px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  /* Remove browser default select styling */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* Ensure text is vertically centered */
+  line-height: 30px;
+  /* Add custom dropdown arrow */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* Ensure field groups are aligned */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* Force consistent baseline for all field groups */
+  vertical-align: top;
+}
+
+.wizard-fields-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  /* Use baseline alignment instead of center */
+  align-items: baseline;
+}
+
 .wizard-textarea {
   width: 100%;
   max-width: 800px;
