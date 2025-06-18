@@ -68,7 +68,7 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -80,10 +80,31 @@ export async function generateQuestions(objective: string): Promise<GeneratedQue
     }
 
     const data = await res.json();
-    const text = data.content?.[0]?.text?.trim();
-    if (!text) throw new Error('Claude API returned empty content');
+    let text = data.content?.[0]?.text?.trim();
 
-    return JSON.parse(text) as GeneratedQuestion[];
+    // Validate the response content before parsing
+    if (!text) {
+      throw new Error('Claude API returned empty content');
+    }
+
+    // Handle Claude sometimes returning JSON in a markdown block
+    if (text.startsWith('```json')) {
+      text = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
+
+    try {
+      const parsed = JSON.parse(text);
+      if (!Array.isArray(parsed)) {
+        throw new Error('Claude API response is not an array');
+      }
+      return parsed as GeneratedQuestion[];
+    } catch (error) {
+      console.error('Failed to parse Claude API response:', text);
+      if (error instanceof Error) {
+        throw new Error(`Invalid JSON response from Claude API: ${error.message}`);
+      }
+      throw new Error(`Invalid JSON response from Claude API: ${String(error)}`);
+    }
   } finally {
     clearTimeout(id);
   }
@@ -134,8 +155,13 @@ export async function regenerateQuestion(
     }
 
     const data = await res.json();
-    const text = data.content?.[0]?.text?.trim();
+    let text = data.content?.[0]?.text?.trim();
     if (!text) throw new Error('Claude API returned empty content');
+
+    // Handle Claude sometimes returning JSON in a markdown block
+    if (text.startsWith('```json')) {
+      text = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
 
     const parsed = JSON.parse(text);
     return (Array.isArray(parsed) ? parsed[0] : parsed) as GeneratedQuestion;
@@ -177,8 +203,13 @@ export async function generateBulkStudentAnswers(questionText: string, count = 3
     }
 
     const data = await res.json();
-    const text = data.content?.[0]?.text?.trim();
+    let text = data.content?.[0]?.text?.trim();
     if (!text) throw new Error('Claude API returned empty content');
+
+    // Handle Claude sometimes returning JSON in a markdown block
+    if (text.startsWith('```json')) {
+      text = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
 
     const parsedJson: unknown = JSON.parse(text);
 
@@ -233,8 +264,13 @@ export async function getSurveyAnalysisFromClaude(promptContent: string): Promis
     }
 
     const data = await res.json();
-    const text = data.content?.[0]?.text?.trim();
+    let text = data.content?.[0]?.text?.trim();
     if (!text) throw new Error('Claude API returned empty content');
+
+    // Handle Claude sometimes returning JSON in a markdown block
+    if (text.startsWith('```json')) {
+      text = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    }
 
     return text;
   } finally {
