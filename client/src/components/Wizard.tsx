@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WizardStepObjective from "./WizardStepObjective";
 import BranchingGraphView, { BranchNode, BranchEdge } from "./BranchingGraphView";
 import { API_URL } from "../config";
@@ -25,7 +25,11 @@ export interface GeneratedQuestion {
   rubric: RubricItem[];
 }
 
-export default function Wizard() {
+interface WizardProps {
+  surveyIdToLoad?: string | null;
+}
+
+export default function Wizard({ surveyIdToLoad }: WizardProps) {
   const [step, setStep] = useState<Step>(Step.Objective);
   const [objective, setObjective] = useState<string>("");
   const [surveyId, setSurveyId] = useState<string | null>(null);
@@ -33,6 +37,28 @@ export default function Wizard() {
   const [edges, setEdges] = useState<BranchEdge[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load an existing survey if an id is provided
+  useEffect(() => {
+    if (surveyIdToLoad) {
+      setLoading(true);
+      setError(null);
+      fetch(`${API_URL}/api/survey/branching/${surveyIdToLoad}`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to load survey data.');
+          return res.json();
+        })
+        .then((data) => {
+          setObjective(data.objective);
+          setSurveyId(data.surveyId);
+          setNodes(data.nodes);
+          setEdges(data.edges);
+          setStep(Step.Graph);
+        })
+        .catch((err: any) => setError(err.message))
+        .finally(() => setLoading(false));
+    }
+  }, [surveyIdToLoad]);
 
   const handleBack = () => setStep((prev) => (prev === Step.Graph ? Step.Objective : prev));
 
@@ -181,7 +207,10 @@ export default function Wizard() {
         Burrow Builder
       </h1>
       <Stepper />
-      {step === Step.Objective && (
+      {loading && step === Step.Objective && (
+        <div>Loading survey...</div>
+      )}
+      {step === Step.Objective && !loading && (
         <WizardStepObjective
           initialObjective={objective}
           loading={loading}
