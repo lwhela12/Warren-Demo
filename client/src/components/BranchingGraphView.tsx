@@ -100,7 +100,6 @@ export default function BranchingGraphView({
   const [showRationaleModal, setShowRationaleModal] = useState(false);
   const [rationaleContent, setRationaleContent] = useState('');
   const [showChat, setShowChat] = useState(false);
-  const [surveyComplete, setSurveyComplete] = useState(false);
 
   const handleTextChange = (id: string, text: string) =>
     setNodes((nds) =>
@@ -249,8 +248,6 @@ export default function BranchingGraphView({
         console.warn('Dropping invalid edges before save');
       }
       await onSave(updatedNodes, validEdges);
-      const isComplete = nodes.every((node) => node.id === 'thank_you');
-      setSurveyComplete(isComplete);
     } finally {
       setSaving(false);
     }
@@ -293,11 +290,9 @@ export default function BranchingGraphView({
         </button>
         <button
           className="login-button"
-          disabled={!surveyComplete}
           style={{
             marginTop: '1rem',
-            marginLeft: '1rem',
-            backgroundColor: surveyComplete ? 'green' : 'grey'
+            marginLeft: '1rem'
           }}
         >
           Seed and Analyze Survey
