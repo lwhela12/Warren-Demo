@@ -15,20 +15,22 @@ export default function ChatOverlay({ surveyId, onClose }: ChatOverlayProps) {
     content: { text: string; options?: string[] };
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [finished, setFinished] = useState(false);
+
+  const start = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/survey/branching/${surveyId}/start`);
+      if (!res.ok) throw new Error();
+      const { node } = await res.json();
+      setCurrentNode(node);
+      setMessages([{ from: 'bot', text: node.content.text }]);
+    } catch {
+      setMessages([{ from: 'bot', text: 'Failed to load survey.' }]);
+    }
+  };
 
   // Load the first node on mount
   useEffect(() => {
-    async function start() {
-      try {
-        const res = await fetch(`${API_URL}/api/survey/branching/${surveyId}/start`);
-        if (!res.ok) throw new Error();
-        const { node } = await res.json();
-        setCurrentNode(node);
-        setMessages([{ from: 'bot', text: node.content.text }]);
-      } catch {
-        setMessages([{ from: 'bot', text: 'Failed to load survey.' }]);
-      }
-    }
     start();
   }, [surveyId]);
 
@@ -47,21 +49,36 @@ export default function ChatOverlay({ surveyId, onClose }: ChatOverlayProps) {
     }
   }, [currentNode]);
 
-  const handleOptionClick = async (option: string) => {
-    if (!currentNode) return;
-    setMessages((ms) => [...ms, { from: 'user', text: option }]);
-    try {
+const handleOptionClick = async (option: string) => {
+  if (!currentNode) return;
+  setMessages((ms) => [...ms, { from: 'user', text: option }]);
+  try {
       const res = await fetch(`${API_URL}/api/survey/branching/${surveyId}/next`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentNodeId: currentNode.id, answer: option })
       });
       const { node } = await res.json();
-      setCurrentNode(node);
-      setMessages((ms) => [...ms, { from: 'bot', text: node.content.text }]);
+      if (node) {
+        setCurrentNode(node);
+        setMessages((ms) => [...ms, { from: 'bot', text: node.content.text }]);
+      } else {
+        setFinished(true);
+        setMessages((ms) => [
+          ...ms,
+          { from: 'bot', text: 'Thank you for completing the survey!' }
+        ]);
+      }
     } catch {
       setMessages((ms) => [...ms, { from: 'bot', text: 'Error fetching next node.' }]);
     }
+};
+
+  const handleRestart = () => {
+    setMessages([]);
+    setCurrentNode(null);
+    setFinished(false);
+    start();
   };
 
   return (
@@ -91,10 +108,9 @@ export default function ChatOverlay({ surveyId, onClose }: ChatOverlayProps) {
       </div>
 
       <div style={{ padding: 8, borderTop: `1px solid ${colors.border}` }}>
-        {currentNode?.type === 'question-multiple-choice' && currentNode.content.options?.map((opt: string) => (
+        {finished ? (
           <button
-            key={opt}
-            onClick={() => handleOptionClick(opt)}
+            onClick={handleRestart}
             style={{
               margin: 4,
               background: colors.primaryDarkBlue,
@@ -105,11 +121,29 @@ export default function ChatOverlay({ surveyId, onClose }: ChatOverlayProps) {
               cursor: 'pointer'
             }}
           >
-            {opt}
+            Restart Survey
           </button>
-        ))}
+        ) :
+          currentNode?.type === 'question-multiple-choice' &&
+          currentNode.content.options?.map((opt: string) => (
+            <button
+              key={opt}
+              onClick={() => handleOptionClick(opt)}
+              style={{
+                margin: 4,
+                background: colors.primaryDarkBlue,
+                color: 'white',
+                border: 'none',
+                borderRadius: 4,
+                padding: '6px 12px',
+                cursor: 'pointer'
+              }}
+            >
+              {opt}
+            </button>
+          ))}
 
-        {currentNode?.type === 'message' && currentNode.id !== 'entry' && (
+        {!finished && currentNode?.type === 'message' && currentNode.id !== 'entry' && (
           currentNode.id === 'thank_you' ? (
             <button
               onClick={onClose}
@@ -130,7 +164,9 @@ export default function ChatOverlay({ surveyId, onClose }: ChatOverlayProps) {
               <input
                 type="text"
                 placeholder="Type your response…"
-                onKeyDown={(e) => e.key === 'Enter' && handleOptionClick((e.target as HTMLInputElement).value)}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' &&
+                  handleOptionClick((e.target as HTMLInputElement).value)}
                 style={{ width: '100%', marginBottom: 4 }}
               />
               <button
