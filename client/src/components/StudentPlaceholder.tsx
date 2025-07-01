@@ -1,232 +1,118 @@
 import React, { useEffect, useState } from 'react';
 import { API_URL } from '../config';
 import { colors } from '../theme';
+import { BranchNode } from './BranchingGraphView';
 
-interface Question {
-  id: string;
-  text: string;
+interface Props {
+  surveyId?: string;
 }
 
-interface Survey {
-  id: string;
-  objective: string;
-  questions: Question[];
-}
-
-export default function StudentPlaceholder() {
-  const [survey, setSurvey] = useState<Survey | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [index, setIndex] = useState(0);
+export default function StudentPlaceholder({ surveyId: propId }: Props) {
+  const [surveyId, setSurveyId] = useState<string | null>(propId || null);
+  const [node, setNode] = useState<BranchNode | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [review, setReview] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [finished, setFinished] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("jwt");
-    localStorage.removeItem("userRole");
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('userRole');
     window.location.reload();
   };
 
   useEffect(() => {
-    fetch(`${API_URL}/api/survey/active`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to fetch active survey: ${res.status}`);
+    async function init() {
+      try {
+        let id = propId;
+        if (!id) {
+          const res = await fetch(`${API_URL}/api/survey/active`);
+          if (!res.ok) throw new Error('No active survey');
+          const data = await res.json();
+          id = data.survey?.id;
         }
-        return res.json();
-      })
-      .then((data) => {
-        setSurvey(data.survey);
-        setLoading(false);
-      })
-      .catch((err) => {
+        if (!id) throw new Error('Survey not found');
+        setSurveyId(id);
+        const startRes = await fetch(`${API_URL}/api/survey/branching/${id}/start`);
+        if (!startRes.ok) throw new Error('Failed to load survey');
+        const startData = await startRes.json();
+        setNode(startData.node);
+      } catch (err) {
         console.error(err);
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    }
+    init();
+  }, [propId]);
 
-  const renderLogoutButton = () => (
-    <button
-      onClick={handleLogout}
-      style={{
-        position: "absolute",
-        top: "1rem",
-        right: "1rem",
-        background: "none",
-        border: "none",
-        color: colors.primaryDarkBlue || 'blue',
-        cursor: "pointer",
-      }}
-    >
-      Logout
-    </button>
-  );
+  const submitResponses = async (finalAnswers: Record<string, string>) => {
+    try {
+      await fetch(`${API_URL}/api/responses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          responses: Object.entries(finalAnswers).map(([nid, answer]) => ({ nodeId: nid, answer }))
+        })
+      });
+    } catch (err) {
+      console.error('Failed submitting responses', err);
+    }
+  };
+
+  const handleNext = async (answer: string) => {
+    if (!surveyId || !node) return;
+    const newAnswers = { ...answers, [node.id]: answer };
+    setAnswers(newAnswers);
+    const res = await fetch(`${API_URL}/api/survey/branching/${surveyId}/next`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentNodeId: node.id, answer })
+    });
+    if (!res.ok) {
+      setFinished(true);
+      await submitResponses(newAnswers);
+      return;
+    }
+    const data = await res.json();
+    if (!data.node) {
+      setFinished(true);
+      await submitResponses(newAnswers);
+      return;
+    }
+    setNode(data.node);
+    if (data.node.type === 'message' && !data.node.content.options?.length) {
+      setFinished(true);
+      await submitResponses(newAnswers);
+    }
+  };
 
   if (loading) return <div style={{ padding: '2rem' }}>Loading...</div>;
-
-  if (!survey) {
-    return (
-      <div className="survey-layout">
-        {renderLogoutButton()}
-        <div className="survey-card">
-          <h1 style={{ marginTop: 0, color: colors.primaryText, textAlign: 'center' }}>No surveys today!</h1>
-        </div>
+  if (!node) return <div style={{ padding: '2rem' }}>No survey available.</div>;
+  if (finished) return (
+    <div className="survey-layout">
+      <button onClick={handleLogout} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: colors.primaryDarkBlue, cursor: 'pointer' }}>Logout</button>
+      <div className="survey-card">
+        <h1 style={{ marginTop: 0, textAlign: 'center', color: colors.primaryText }}>Thank you!</h1>
       </div>
-    );
-  }
-
-  const questions = survey.questions;
-  const current = questions[index];
-
-  if (submitted) {
-    return (
-      <div className="survey-layout">
-        {renderLogoutButton()}
-        <div className="survey-card">
-          <h1 style={{ marginTop: 0, color: colors.primaryText, textAlign: 'center' }}>Thanks for submitting!</h1>
-          <button
-            className="survey-button-primary"
-            type="button"
-            onClick={async () => {
-              try {
-                const seedResponse = await fetch(`${API_URL}/api/survey/${survey.id}/seed`, { method: 'POST' });
-                if (!seedResponse.ok) throw new Error(`Seed failed: ${seedResponse.status}`);
-                
-                const analyzeResponse = await fetch(`${API_URL}/api/survey/${survey.id}/analyze`, { method: 'POST' });
-                if (!analyzeResponse.ok) throw new Error(`Analyze failed: ${analyzeResponse.status}`);
-                
-                alert('Survey seeded and analyzed');
-              } catch (err) {
-                console.error("Error during seed/analyze:", err);
-                alert(`An error occurred: ${err instanceof Error ? err.message : String(err)}`);
-              }
-            }}
-            style={{ marginTop: '1rem' }}
-          >
-            Seed & Analyze Survey (Dev)
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (review) {
-    return (
-      <div className="survey-layout">
-        {renderLogoutButton()}
-        <div className="survey-header">
-          <div style={{ fontWeight: 600, color: colors.primaryText, textAlign: 'center', width: '100%' }}>Review Answers</div>
-        </div>
-        <div className="survey-card">
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {questions.map((q) => (
-              <li key={q.id} style={{ marginBottom: 12 }}>
-                <div style={{ fontWeight: 600, marginBottom: 4, color: colors.primaryText }}>{q.text}</div>
-                <div style={{ border: `1px solid ${colors.border}`, padding: '0.5rem', borderRadius: 4 }}>
-                  {answers[q.id] || ''}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="survey-actions">
-          <button
-            className="survey-button-secondary"
-            type="button"
-            onClick={() => setReview(false)}
-          >
-            Back
-          </button>
-          <button
-            className="survey-button-primary"
-            type="button"
-            onClick={async () => {
-              try {
-                const res = await fetch(`${API_URL}/api/responses`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    responses: questions.map((q) => ({
-                      questionId: q.id,
-                      answer: answers[q.id] || ''
-                    }))
-                  })
-                });
-                if (!res.ok) {
-                  throw new Error(`Failed to submit responses: ${res.status}`);
-                }
-                setSubmitted(true);
-              } catch (err) {
-                console.error(err);
-                alert(`An error occurred while submitting: ${err instanceof Error ? err.message : String(err)}`);
-              }
-            }}
-          >
-            Submit Survey
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const progress = questions.length > 0 ? ((index) / questions.length) * 100 : 0;
+    </div>
+  );
 
   return (
     <div className="survey-layout">
-      {renderLogoutButton()}
-
-      <div className="survey-header">
-        <div style={{ fontWeight: 600, color: colors.primaryText, textAlign: 'center', width: '100%' }}>Student Survey</div>
-      </div>
-
+      <button onClick={handleLogout} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: colors.primaryDarkBlue, cursor: 'pointer' }}>Logout</button>
       <div className="survey-card">
-        <div style={{ fontWeight: 600, marginBottom: 12, color: colors.primaryText, textAlign: 'center' }}>{current?.text || 'Loading question...'}</div>
-
-        {questions.length > 0 && current && (
-          <div style={{ width: '100%', marginTop: 8, marginBottom: 16 }}>
-            <div className="survey-progress" style={{ marginBottom: 4 }}>
-              <div
-                className="survey-progress-bar"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div style={{ fontSize: 12, color: colors.secondaryText, textAlign: 'center' }}>{`Question ${index + 1} of ${questions.length}`}</div>
+        <div style={{ fontWeight: 600, marginBottom: 12, color: colors.primaryText, textAlign: 'center' }}>{node.content.text}</div>
+        {node.type === 'question-multiple-choice' ? (
+          <div>
+            {node.content.options?.map((opt) => (
+              <button key={opt} className="survey-button-primary" style={{ display: 'block', marginBottom: 8 }} onClick={() => handleNext(opt)}>
+                {opt}
+              </button>
+            ))}
           </div>
+        ) : (
+          <button className="survey-button-primary" onClick={() => handleNext('')}>Continue</button>
         )}
-
-        <textarea
-          value={answers[current?.id || ''] || ''}
-          onChange={(e) =>
-            current && setAnswers({ ...answers, [current.id]: e.target.value })
-          }
-          style={{ width: '100%', minHeight: 80 }}
-          disabled={!current}
-        />
-      </div>
-
-      <div className="survey-actions">
-        {index > 0 && (
-          <button
-            className="survey-button-secondary"
-            type="button"
-            onClick={() => setIndex(index - 1)}
-          >
-            Previous
-          </button>
-        )}
-        <button
-          className="survey-button-primary"
-          type="button"
-          onClick={() => {
-            if (index === questions.length - 1) {
-              setReview(true);
-            } else {
-              setIndex(index + 1);
-            }
-          }}
-        >
-          {index === questions.length - 1 ? 'Review' : 'Next'}
-        </button>
       </div>
     </div>
   );

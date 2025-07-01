@@ -11,7 +11,11 @@ import {
 import {
   seedResponsesForSurvey
 } from '../services/responseService';
-import { analyzeSurveyResponses } from '../services/analysisService';
+import {
+  analyzeSurveyResponses,
+  analyzeBranchingSurvey
+} from '../services/analysisService';
+import { prisma } from '../prisma/client';
 
 const router = Router();
 
@@ -26,6 +30,21 @@ router.post('/', async (req, res) => {
   } catch (error) {
     console.error('Error creating survey:', error);
     res.status(500).json({ error: 'Failed to create survey' });
+  }
+});
+
+// Fetch all surveys ordered by creation date (new endpoint)
+router.get('/', async (_req, res) => {
+  try {
+    const surveys = await prisma.survey.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    res.json({ surveys });
+  } catch (error) {
+    console.error('Error fetching surveys:', error);
+    res.status(500).json({ error: 'Failed to fetch surveys' });
   }
 });
 
@@ -79,7 +98,24 @@ router.post('/:id/seed', async (req, res) => {
 router.post('/:id/analyze', async (req, res) => {
   const { id } = req.params;
   try {
-    const analysis = await analyzeSurveyResponses(id);
+    const survey = await prisma.survey.findUnique({
+      where: { id },
+      include: { _count: { select: { nodes: true } } }
+    });
+
+    if (!survey) {
+      return res.status(404).json({ error: 'Survey not found' });
+    }
+
+    let analysis: string;
+    if (survey._count.nodes > 0) {
+      console.log(`Analyzing branching survey ${id}...`);
+      analysis = await analyzeBranchingSurvey(id);
+    } else {
+      console.log(`Analyzing linear survey ${id}...`);
+      analysis = await analyzeSurveyResponses(id);
+    }
+
     res.json({ analysis });
   } catch (error) {
     console.error('Error analyzing survey:', error);

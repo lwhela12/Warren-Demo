@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WizardStepObjective from "./WizardStepObjective";
-import WizardStepQuestions from "./WizardStepQuestions";
+import BranchingGraphView, { BranchNode, BranchEdge } from "./BranchingGraphView";
 import { API_URL } from "../config";
 import { colors } from "../theme";
 
 // Step enums for readability.
 enum Step {
   Objective = 0,
-  Questions = 1,
+  Graph = 1
 }
 
 // Define the structure for individual rubric items if they are objects
@@ -22,117 +22,69 @@ export type RubricItem = RubricObject | string;
 
 export interface GeneratedQuestion {
   text: string;
-  rubric: RubricItem[]; // Changed from string[] to RubricItem[]
+  rubric: RubricItem[];
 }
 
-export interface Question extends GeneratedQuestion {
-  id: string;
-  status?: 'pending' | 'approved' | 'excluded';
+interface WizardProps {
+  surveyIdToLoad?: string | null;
 }
 
-export default function Wizard() {
+export default function Wizard({ surveyIdToLoad }: WizardProps) {
   const [step, setStep] = useState<Step>(Step.Objective);
   const [objective, setObjective] = useState<string>("");
   const [surveyId, setSurveyId] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [nodes, setNodes] = useState<BranchNode[]>([]);
+  const [edges, setEdges] = useState<BranchEdge[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [regenerating, setRegenerating] = useState<string | null>(null);
 
-  const goToStep = (target: Step) => setStep(target);
-  const handleBack = () => setStep((prev) => (prev === Step.Questions ? Step.Objective : prev));
-
-  const handleQuestionChange = (qid: string, text: string) => {
-    setQuestions((prev) => prev.map((q) => (q.id === qid ? { ...q, text } : q)));
-  };
-
-  const handleStatusChange = (qid: string, status: 'approved' | 'excluded') => {
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === qid ? { ...q, status } : q))
-    );
-  };
-
-const handleRegenerate = async (
-  qid: string,
-  feedback: string
-) => {
-  setRegenerating(qid);
-  setError(null);
-  try {
-    const current = questions.find(q => q.id === qid)?.text || '';
-    const res = await fetch(`${API_URL}/api/claude/regenerate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ objective, question: current, feedback })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to regenerate');
+  // Load an existing survey if an id is provided
+  useEffect(() => {
+    if (surveyIdToLoad) {
+      setLoading(true);
+      setError(null);
+      fetch(`${API_URL}/api/survey/branching/${surveyIdToLoad}`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to load survey data.');
+          return res.json();
+        })
+        .then((data) => {
+          setObjective(data.objective);
+          setSurveyId(data.surveyId);
+          setNodes(data.nodes);
+          setEdges(data.edges);
+          setStep(Step.Graph);
+        })
+        .catch((err: any) => setError(err.message))
+        .finally(() => setLoading(false));
     }
-    const { question: newQuestion } = await res.json();
-    const qData = Array.isArray(newQuestion) ? newQuestion[0] : newQuestion;
-    setQuestions((prev) =>
-      prev.map((q) =>
-        q.id === qid
-          ? { ...q, text: qData.text, rubric: qData.rubric }
-          : q
-      )
-    );
-    if (surveyId) {
-      // Persist the regenerated text to the survey just like manual edits
-      await fetch(`${API_URL}/api/survey/${surveyId}/question/${qid}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: qData.text })
-      });
-    }
-  } catch (err: any) {
-    console.error(err);
-    setError(err.message || 'Failed to regenerate');
-  } finally {
-    setRegenerating(null);
-  }
-};
+  }, [surveyIdToLoad]);
+
+  const handleBack = () => setStep((prev) => (prev === Step.Graph ? Step.Objective : prev));
+
+
 
   const handleObjectiveSubmit = async (obj: string) => {
     setObjective(obj);
     setError(null);
     setLoading(true);
-    setQuestions([]);
-    // Call API
     try {
-      const res = await fetch(`${API_URL}/api/claude`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(`${API_URL}/api/survey/branching`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ objective: obj })
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Failed to generate questions");
+        throw new Error(err.error || 'Failed to create survey');
       }
       const data = await res.json();
-
-      const save = await fetch(`${API_URL}/api/survey`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ objective: obj, questions: data.questions })
-      });
-      if (!save.ok) {
-        const err = await save.json();
-        throw new Error(err.error || "Failed to save survey");
-      }
-      const { survey } = await save.json();
-      const merged = survey.questions.map((q: any, idx: number) => ({
-        id: q.id,
-        text: q.text,
-        rubric: data.questions[idx].rubric,
-        status: 'pending' as const
-      }));
-      setSurveyId(survey.id);
-      setQuestions(merged);
-      setStep(Step.Questions);
+      setSurveyId(data.surveyId);
+      setNodes(data.nodes);
+      setEdges(data.edges);
+      setStep(Step.Graph);
     } catch (err: any) {
-      setError(err.message || "Unexpected error");
+      setError(err.message || 'Unexpected error');
     } finally {
       setLoading(false);
     }
@@ -196,7 +148,7 @@ const handleRegenerate = async (
             height: 3,
             borderRadius: 3,
             background:
-              step === Step.Questions
+              step === Step.Graph
                 ? `linear-gradient(to right, ${gray}, ${brandBlue} 80%)`
                 : gray,
             margin: "0 6px",
@@ -211,14 +163,14 @@ const handleRegenerate = async (
               width: 40,
               height: 40,
               borderRadius: "50%",
-              background: step === Step.Questions ? brandBlue : gray,
-              color: step === Step.Questions ? "#fff" : "#1a1d1f",
+              background: step === Step.Graph ? brandBlue : gray,
+              color: step === Step.Graph ? "#fff" : "#1a1d1f",
               fontWeight: 600,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 20,
-              boxShadow: step === Step.Questions ? "0 2px 8px #2A3F5422" : undefined,
+              boxShadow: step === Step.Graph ? "0 2px 8px #2A3F5422" : undefined,
               marginRight: 10,
               marginLeft: 10,
               transition: "background 0.2s",
@@ -228,13 +180,13 @@ const handleRegenerate = async (
           </div>
           <span
             style={{
-              color: step === Step.Questions ? brandBlue : colors.primaryText,
-              fontWeight: step === Step.Questions ? 600 : 400,
+              color: step === Step.Graph ? brandBlue : colors.primaryText,
+              fontWeight: step === Step.Graph ? 600 : 400,
               fontSize: 16,
               letterSpacing: "0.01em",
             }}
           >
-            Questions
+            Graph
           </span>
         </div>
       </div>
@@ -242,20 +194,7 @@ const handleRegenerate = async (
   }
 
   return (
-    <div
-      className="card wizard-main-card"
-      style={{
-        maxWidth: 580,
-        margin: "0 auto",
-        marginTop: "3vw",
-        marginBottom: "3vw",
-        boxShadow: "0 6px 32px rgba(37,74,138,0.08)",
-        padding: "2.2rem 2.5rem 2.2rem 2.5rem",
-        borderRadius: 24,
-        background: colors.offWhite,
-        border: "1.5px solid #e7e7ef",
-      }}
-    >
+    <div className="card wizard-main-card">
       <h1 style={{
         marginTop: 0,
         marginBottom: 18,
@@ -268,7 +207,10 @@ const handleRegenerate = async (
         Burrow Builder
       </h1>
       <Stepper />
-      {step === Step.Objective && (
+      {loading && step === Step.Objective && (
+        <div>Loading survey...</div>
+      )}
+      {step === Step.Objective && !loading && (
         <WizardStepObjective
           initialObjective={objective}
           loading={loading}
@@ -276,18 +218,26 @@ const handleRegenerate = async (
           onSubmit={handleObjectiveSubmit}
         />
       )}
-      {step === Step.Questions && (
-        <WizardStepQuestions
-          objective={objective}
-          surveyId={surveyId as string}
-          questions={questions}
-          regeneratingId={regenerating}
-          onQuestionChange={handleQuestionChange}
-          onStatusChange={handleStatusChange}
-          onRegenerate={handleRegenerate}
-          loading={loading}
-          error={error}
-          onBack={handleBack}
+      {step === Step.Graph && surveyId && (
+        <BranchingGraphView
+          surveyId={surveyId}
+          nodes={nodes}
+          edges={edges}
+          onSave={async (n, e) => {
+            // Normalize edges before persisting
+            const branchEdges = e.map((edge) => ({
+              sourceNodeId: edge.source,
+              targetNodeId: edge.target,
+              conditionValue: edge.label || undefined
+            }));
+            await fetch(`${API_URL}/api/survey/branching/${surveyId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ nodes: n, edges: branchEdges })
+            });
+            setNodes(n);
+            setEdges(branchEdges);
+          }}
         />
       )}
     </div>

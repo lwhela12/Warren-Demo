@@ -16,6 +16,12 @@ export default function WizardStepObjective({ initialObjective = "", loading, er
   const [title, setTitle] = useState('');
   const [touched, setTouched] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
+  const classes = [
+    '1st Period: Freshman English',
+    '2nd Period: Senior English',
+    '3rd Period: AP English',
+    '4th Period: Advanced Composition'
+  ];
   // For accessibility let user submit with Enter+Ctrl (multiline otherwise)
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +58,14 @@ export default function WizardStepObjective({ initialObjective = "", loading, er
             onChange={(e) => setTitle(e.target.value)}
             disabled={loading}
           />
+        </div>
+        <div className="field-group">
+          <label htmlFor="class" className="field-label">Class</label>
+          <select id="class" className="field-input class-field" disabled={loading}>
+            {classes.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         </div>
       </div>
       <label htmlFor="objective" className="field-label">

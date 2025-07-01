@@ -143,7 +143,7 @@ export async function regenerateQuestion(
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -191,7 +191,7 @@ export async function generateBulkStudentAnswers(questionText: string, count = 3
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 1024,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -252,7 +252,7 @@ export async function getSurveyAnalysisFromClaude(promptContent: string): Promis
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 2048,
         messages: [{ role: 'user', content: promptContent }]
       })
@@ -273,6 +273,93 @@ export async function getSurveyAnalysisFromClaude(promptContent: string): Promis
     }
 
     return text;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+export async function generateBranchingSurvey(objective: string): Promise<{ nodes: any[]; edges: any[] }> {
+  const prompt = `You are an expert survey designer. Use the following Survey Methodology Framework to create a branching survey:
+${methodologyFramework}
+
+Build a branching survey for the objective: "${objective}".
+
+The survey MUST follow this pattern:
+1. An initial "entry" node (type: 'message') welcoming the participant.
+2. A multiple-choice question (type: 'question-multiple-choice') with 4–6 options.
+3. For each question, generate NO MORE THAN 3 follow-up branches:
+   - Group similar responses into a single branch when appropriate (e.g. two positive choices share a prompt).
+   - Provide at most one follow-up per branch. Neutral or middle choices can skip to the next question.
+4. Follow-up branches are open-ended message nodes that reflect back the user’s selection in a conversational prompt.
+5. Repeat steps 2–4 until you have up to 4 multiple-choice questions and their branches, then end with a "thank_you" message node.
+
+Return ONLY valid JSON with top-level keys "nodes" and "edges".
+- Each node: { id: string; type: 'message' | 'question-multiple-choice'; content: { text: string; options?: string[]; rationale?: string } }
+- Each edge: { sourceNodeId: string; targetNodeId: string; conditionValue?: string }
+The first node id must be "entry", and the final node id must be "thank_you".`;
+
+  const apiKey = process.env.CLAUDE_API_KEY;
+  const timeoutMs = Number(process.env.CLAUDE_TIMEOUT_MS || 10000);
+
+  if (process.env.NODE_ENV === 'test' || !apiKey) {
+    // Stub: one MC question with two branches (grouped responses) and final thank_you
+    const nodes = [
+      { id: 'entry',       surveyId: '', type: 'message', content: { text: 'Welcome to our test survey!', options: [], rationale: 'Intro.' } },
+      { id: 'q1',          surveyId: '', type: 'question-multiple-choice', content: { text: 'How was your testing experience?', options: ['Positive', 'Neutral', 'Negative'], rationale: 'Assess overall sentiment.' } },
+      { id: 'q1_branch1',  surveyId: '', type: 'message', content: { text: "You felt positive. What aspect of the test did you like most?", options: [], rationale: 'Explore positive feedback.' } },
+      { id: 'q1_branch2',  surveyId: '', type: 'message', content: { text: "You had a negative experience. What challenges did you face?", options: [], rationale: 'Gather negative feedback.' } },
+      { id: 'thank_you',   surveyId: '', type: 'message', content: { text: 'Thank you for your feedback!', options: [], rationale: 'Conclude survey.' } }
+    ];
+    const edges = [
+      { sourceNodeId: 'entry',      targetNodeId: 'q1' },
+      { sourceNodeId: 'q1',         targetNodeId: 'q1_branch1', conditionValue: 'Positive' },
+      { sourceNodeId: 'q1',         targetNodeId: 'q1_branch2', conditionValue: 'Negative' },
+      { sourceNodeId: 'q1',         targetNodeId: 'thank_you', conditionValue: 'Neutral' },
+      { sourceNodeId: 'q1_branch1', targetNodeId: 'thank_you' },
+      { sourceNodeId: 'q1_branch2', targetNodeId: 'thank_you' }
+    ];
+    return { nodes, edges };
+  }
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 16000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Claude API error ${res.status}: ${errText}`);
+    }
+
+    const responseJson = await res.json();
+    const content = responseJson.content?.[0]?.text?.trim();
+    if (!content) throw new Error('Claude API returned empty content');
+    console.log('generateBranchingSurvey raw content:', content);
+    // Remove Markdown code fences if present (e.g. ```json ... ```)
+    const jsonText = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    const parsed = JSON.parse(jsonText);
+    console.log('generateBranchingSurvey parsed JSON:', parsed);
+    // Convert legacy 'source'/'target' keys to 'sourceNodeId'/'targetNodeId'
+    const normalizedEdges = parsed.edges.map((e: any) => ({
+      sourceNodeId: e.sourceNodeId ?? e.source,
+      targetNodeId: e.targetNodeId ?? e.target,
+      conditionValue: e.conditionValue
+    }));
+    return { nodes: parsed.nodes, edges: normalizedEdges };
   } finally {
     clearTimeout(id);
   }
