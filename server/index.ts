@@ -26,10 +26,6 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.send('OK');
 });
 
-const port = process.env.PORT || 5001;
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
 
 // Export app for testing or external usage
-export { app };
+export default app;
