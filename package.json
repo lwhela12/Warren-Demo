@@ -5,16 +5,17 @@
     "server",
     "client"
   ],
-  "scripts": {
-    "dev": "concurrently -k --names \"SERVER,CLIENT\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
-    "mailhog": "bash ./scripts/mailhog.sh",
-    "tunnel": "bash ./scripts/tunnel.sh",
-    "demo:seed": "npm --prefix server run demo:seed",
-    "db:seed": "npm --prefix server run db:seed",
-    "db:seed:branching": "ts-node server/db/branchingResponseSeed.ts",
-    "lint": "eslint \"**/*.{ts,tsx}\"",
-    "test": "vitest"
-  },
+"scripts": {
+  "build": "npx prisma generate --schema=./server/prisma/schema.prisma && npx prisma db push --schema=./server/prisma/schema.prisma && cd client && npm run build",
+  "dev": "concurrently -k --names \"SERVER,CLIENT\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+  "mailhog": "bash ./scripts/mailhog.sh",
+  "tunnel": "bash ./scripts/tunnel.sh",
+  "demo:seed": "npm --prefix server run demo:seed",
+  "db:seed": "npm --prefix server run db:seed",
+  "db:seed:branching": "ts-node server/db/branchingResponseSeed.ts",
+  "lint": "eslint \"**/*.{ts,tsx}\"",
+  "test": "vitest"
+},
   "devDependencies": {
     "concurrently": "^8.2.0",
     "eslint": "^8.52.0",

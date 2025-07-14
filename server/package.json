@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "dev": "nodemon --watch . --ext ts --exec \"ts-node index.ts\"",
+    "build": "npx prisma generate --schema=./server/prisma/schema.prisma && npx prisma db push --schema=./server/prisma/schema.prisma && cd client && npm run build",
+    "dev": "concurrently -k --names \"SERVER,CLIENT\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
     "db:seed": "ts-node ./db/seed.ts",
     "demo:seed": "ts-node ./db/demoSeed.ts",
     "db:seed:llm-responses": "ts-node ./db/llmResponseSeed.ts"
