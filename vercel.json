@@ -19,8 +19,8 @@
       "destination": "/server/index.ts"
     },
     {
-      "source": "/(.*)",
-      "destination": "/client/index.html"
+      "source": "/((?!api/|assets/|favicon.ico).*)",
+      "destination": "/index.html"
     }
   ]
 }
